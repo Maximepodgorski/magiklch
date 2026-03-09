@@ -118,12 +118,13 @@ EC3. Direct URL with valid params (`/random?h=237&c=0.198`): Shows that specific
 
 ### Out of Scope
 
-- Advanced controls (lightness/chroma sliders)
 - Color blindness simulator
 - Multi-palette workspace
-- Export features (Figma, Tailwind config)
+- Export to Figma variables (file-based export — multi-format copy is in spec 3)
 - Analytics
 - Deployment pipeline (Vercel auto-deploys on push)
+
+**Note:** L/C/H sliders and multi-format export are now in spec 3 scope (moved from V2 to V1).
 
 ## Quality Checklist
 

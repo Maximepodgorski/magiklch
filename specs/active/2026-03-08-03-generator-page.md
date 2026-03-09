@@ -13,7 +13,12 @@ depends: 02-color-engine
 
 Build the main generator page (`/`) — the hero of the app. Wire color engine to React hooks, build all palette UI components (shade cards, grid, color input, format toggle, palette header), and shared components (copy button, gamut badge, contrast badge). User types a color → sees 11 shades with contrast + gamut info → copies values in 1 click → shares via URL.
 
-**Spec review changes:** A11y (ARIA, keyboard, focus) is now IN this spec, not deferred to spec 5. Components ship complete. Format toggle is a segmented control (1-click), not a Select dropdown (2-click). Default format is HEX. Copy All outputs CSS custom properties. `app/page.tsx` uses Suspense boundary for useSearchParams.
+**Spec review changes:** A11y (ARIA, keyboard, focus) is now IN this spec, not deferred to spec 5. Components ship complete. Format toggle is a segmented control (1-click), not a Select dropdown (2-click). Default format is HEX. `app/page.tsx` uses Suspense boundary for useSearchParams.
+
+**Product update (2026-03-09):** 3 features added to V1 scope:
+1. **L/C/H Sliders** — 3 range bars (Lightness, Chroma, Hue) with numeric inputs as alternative to color text input
+2. **Tooltip shade cards** — Cards show swatch + shade number only; OKLCH/HEX values appear on hover via Tooltip
+3. **Multi-format export** — Export entire palette as CSS vars / JSON / SCSS / Tailwind config / CSS-in-JS (replaces simple "Copy All")
 
 ## Codebase Impact (MANDATORY)
 
@@ -25,18 +30,20 @@ Build the main generator page (`/`) — the hero of the app. Wire color engine t
 | `components/shared/copy-button.tsx` | CREATE | 1-click copy wrapper with checkmark animation |
 | `components/shared/gamut-badge.tsx` | CREATE | sRGB/P3 indicator. Plain `<span>` with `aria-label` (NOT `role="status"`). |
 | `components/shared/contrast-badge.tsx` | CREATE | APCA level badge (AAA/AA/A/Fail). Plain `<span>` with `aria-label`. Badge text color meets APCA Lc 60+ against card surface. |
-| `components/palette/shade-card.tsx` | CREATE | `<button>` element (NOT div role="button"). Swatch + values + badges + copy. ARIA label includes step, value, contrast level, gamut. |
+| `components/palette/shade-card.tsx` | CREATE | `<button>` element (NOT div role="button"). **Swatch + shade number only** — OKLCH/HEX values revealed **on hover via Tooltip** (not always visible). Copy on click. ARIA label includes step, value, contrast level, gamut. |
 | `components/palette/palette-grid.tsx` | CREATE | Responsive 11-shade grid layout. `role="list"` with `role="listitem"` and roving tabindex for arrow key navigation. |
 | `components/palette/color-input.tsx` | CREATE | Color input with format detection + error state. `aria-invalid` + `aria-describedby` on error. |
+| `components/palette/lch-sliders.tsx` | CREATE | **3 range sliders** (Lightness 0–100%, Chroma 0–0.4, Hue 0–360°) with numeric input fields. Real-time palette update. Alternative input mode to color-input. |
 | `components/palette/format-toggle.tsx` | CREATE | **Segmented control / tab strip** (HEX / OKLCH / HSL / var) — 1-click switch. NOT a Select dropdown. |
-| `components/palette/palette-header.tsx` | CREATE | Palette name + Share + **Copy All (CSS custom properties in selected format)** |
+| `components/palette/export-palette.tsx` | CREATE | **Multi-format export panel** — copy entire palette as CSS variables, JSON, SCSS `$map`, Tailwind config extend, CSS-in-JS object. Format selector + "Copy All" button. |
+| `components/palette/palette-header.tsx` | CREATE | Palette name + Share + **Export** (opens export panel) |
 | `app/page.tsx` | MODIFY | Replace placeholder. **Wrap in `<Suspense fallback={<PaletteSkeleton />}>`.** |
 | `lib/color-engine.ts` | AFFECTED | Consumed by use-palette hook |
 | `types/color.ts` | AFFECTED | Consumed by all components |
 | `components/ui/` | AFFECTED | Badge, Button, Input, Toast, Tooltip consumed |
 
-**Files:** 11 create | 1 modify | ~15 affected
-**Reuse:** Lyse Badge (contrast + gamut), Lyse Button (copy, share), Lyse Input (color input), Lyse Toast (copy feedback), Lyse Tooltip (shade hover)
+**Files:** 13 create | 1 modify | ~15 affected
+**Reuse:** Lyse Badge (contrast + gamut), Lyse Button (copy, share, shuffle), Lyse Input (color input + slider numeric fields), Lyse Toast (copy feedback), Lyse Tooltip (shade card hover values), Lyse Select (export format picker)
 **Breaking changes:** None
 **New dependencies:** None
 
@@ -56,18 +63,27 @@ PRECONDITION: App running with color engine (specs 1+2)
    → System debounces (300ms), parses input, updates URL params
    → User sees palette regenerate with rose/red shades
 
-3. User clicks shade 500 card (a `<button>`)
+2b. Alternatively, user adjusts L/C/H sliders
+   → System updates palette in real-time as slider moves
+   → Numeric input fields show current values (L: 51%, C: 0.144, H: 260°)
+   → URL params update on slider release (debounced)
+
+3. User hovers shade 500 card
+   → Tooltip shows OKLCH + HEX values
+   → User clicks the card (a `<button>`)
    → System copies hex value to clipboard
    → User sees toast "Copied #e11d48" (auto-dismiss 2s)
    → Visually-hidden aria-live region announces the copy
 
 4. User clicks "OKLCH" in the segmented format toggle (1 click)
-   → System updates all shade cards to OKLCH format
-   → User sees `oklch(...)` values on all cards
+   → System updates tooltip format on all shade cards
+   → User sees `oklch(...)` values on hover
 
-5. User clicks [Copy All]
-   → System copies all 11 shades as CSS custom properties in selected format
-   → User sees toast "Copied 11 color values"
+5. User clicks [Export]
+   → Export panel opens with format selector (CSS vars / JSON / SCSS / Tailwind / CSS-in-JS)
+   → User selects SCSS, clicks "Copy"
+   → System copies full palette as SCSS `$map`
+   → User sees toast "Copied 11 color values as SCSS"
 
 6. User clicks [Share]
    → System copies current URL to clipboard
@@ -138,7 +154,11 @@ EC6. Hydration mismatch from localStorage format: useColorFormat returns null un
 - [ ] AC-9: GIVEN each shade card WHEN shade is outside sRGB THEN P3 badge is visible
 - [ ] AC-10: GIVEN palette grid WHEN viewport is xl (≥1280px) THEN all 11 shades display in single row
 - [ ] AC-11: GIVEN palette grid WHEN viewport is sm (<640px) THEN shades display in 2-column grid
-- [ ] AC-12: GIVEN palette header WHEN user clicks Copy All THEN all 11 shades copied as CSS custom properties (`:root { --color-{name}-50: {value}; ... }`) in the currently selected format
+- [ ] AC-12: GIVEN export panel WHEN user selects a format and clicks Copy THEN all 11 shades are copied in that format (CSS vars / JSON / SCSS $map / Tailwind config / CSS-in-JS object)
+- [ ] AC-12b: GIVEN export panel WHEN user selects CSS vars THEN output is `:root { --color-{name}-50: {value}; ... }`
+- [ ] AC-12c: GIVEN export panel WHEN user selects JSON THEN output is `{ "50": "#xxx", ... }` valid JSON
+- [ ] AC-12d: GIVEN export panel WHEN user selects SCSS THEN output is `$palette-{name}: ( "50": #xxx, ... );`
+- [ ] AC-12e: GIVEN export panel WHEN user selects Tailwind THEN output is `{ colors: { {name}: { 50: "#xxx", ... } } }` config extend format
 - [ ] AC-13: GIVEN any interactive element WHEN focused via Tab THEN visible focus ring is displayed
 - [ ] AC-14: GIVEN a shade card WHEN focused and user presses Enter or Space THEN shade value is copied to clipboard
 - [ ] AC-15: GIVEN shade grid (`role="list"`) WHEN user presses Arrow Left/Right THEN focus moves between adjacent shades via roving tabindex
@@ -152,12 +172,26 @@ EC6. Hydration mismatch from localStorage format: useColorFormat returns null un
 - [ ] AC-E2: GIVEN clipboard API unavailable WHEN user clicks copy THEN fallback toast message appears (no crash)
 - [ ] AC-E3: GIVEN URL with invalid params (`?h=999&c=5`) WHEN loaded THEN values are clamped to valid ranges
 
+### Must Have — L/C/H Sliders (BLOCKING)
+
+- [ ] AC-19: GIVEN generator page WHEN rendered THEN 3 slider bars are visible: Lightness (0–100%), Chroma (0–0.4), Hue (0–360°)
+- [ ] AC-20: GIVEN L/C/H sliders WHEN user drags a slider THEN palette regenerates in real-time with updated values
+- [ ] AC-21: GIVEN L/C/H sliders WHEN rendered THEN each slider has a numeric input field showing current value, editable by typing
+- [ ] AC-22: GIVEN numeric input on slider WHEN user types a value THEN slider thumb updates and palette regenerates
+- [ ] AC-23: GIVEN L/C/H sliders WHEN user stops dragging THEN URL params update (debounced, not on every frame)
+- [ ] AC-24: GIVEN URL with params `?h=260&c=0.144&l=0.51` WHEN page loads THEN sliders reflect those values
+
+### Must Have — Tooltip Shade Cards (BLOCKING)
+
+- [ ] AC-25: GIVEN a shade card WHEN rendered THEN shows swatch color + shade number only (no OKLCH/HEX values visible by default)
+- [ ] AC-26: GIVEN a shade card WHEN hovered THEN Tooltip shows OKLCH + HEX values in the selected format
+- [ ] AC-27: GIVEN a shade card on mobile WHEN tapped THEN copies value (tooltip not required on touch)
+
 ### Should Have
 
-- [ ] AC-19: GIVEN a shade card WHEN hovered THEN tooltip shows full OKLCH breakdown
-- [ ] AC-20: GIVEN copy button WHEN clicked THEN shows checkmark animation (300ms), respects `prefers-reduced-motion`
-- [ ] AC-21: GIVEN color input WHEN typing rapidly THEN generation is debounced at 300ms (no jank)
-- [ ] AC-22: GIVEN the format default WHEN app loads for first time THEN format is HEX (not OKLCH)
+- [ ] AC-28: GIVEN copy button WHEN clicked THEN shows checkmark animation (300ms), respects `prefers-reduced-motion`
+- [ ] AC-29: GIVEN color input WHEN typing rapidly THEN generation is debounced at 300ms (no jank)
+- [ ] AC-30: GIVEN the format default WHEN app loads for first time THEN format is HEX (not OKLCH)
 
 ## Scope
 
@@ -167,19 +201,20 @@ EC6. Hydration mismatch from localStorage format: useColorFormat returns null un
 - [ ] 4. Build `components/shared/contrast-badge.tsx` — APCA level badge as `<span>` with `aria-label` (no `role="status"`), badge text Lc 60+ → AC-8
 - [ ] 5. Build `components/shared/gamut-badge.tsx` — sRGB/P3 indicator as `<span>` with `aria-label` (no `role="status"`) → AC-9
 - [ ] 6. Build `components/shared/copy-button.tsx` — 1-click copy with toast + checkmark (respects `prefers-reduced-motion`) → AC-4, AC-20
-- [ ] 7. Build `components/palette/shade-card.tsx` — **`<button>` element** (not div), swatch via inline `style={{ backgroundColor }}` + `forced-color-adjust: none`, values + badges + copy, ARIA label with step + value + contrast + gamut → AC-4, AC-8, AC-9, AC-14, AC-16, AC-19
+- [ ] 7. Build `components/palette/shade-card.tsx` — **`<button>` element** (not div), swatch via inline `style={{ backgroundColor }}` + `forced-color-adjust: none`, **swatch + shade number only** (values in Tooltip on hover), copy on click, ARIA label with step + value + contrast + gamut → AC-4, AC-8, AC-9, AC-14, AC-16, AC-25, AC-26, AC-27
 - [ ] 8. Build `components/palette/palette-grid.tsx` — responsive grid, `role="list"` + `role="listitem"`, roving tabindex for arrow key navigation → AC-10, AC-11, AC-15
 - [ ] 9. Build `components/palette/color-input.tsx` — input with format detection + validation + `aria-invalid` + `aria-describedby` error → AC-2, AC-3, AC-E1, AC-17, AC-21
 - [ ] 10. Build `components/palette/format-toggle.tsx` — **segmented control (4 tabs: HEX / OKLCH / HSL / var)**, NOT Select dropdown → AC-5
-- [ ] 11. Build `components/palette/palette-header.tsx` — name + Share + Copy All (CSS custom properties in selected format) + one-line descriptor: "Generate OKLCH palettes with APCA contrast" → AC-6, AC-12
-- [ ] 12. Add visually-hidden `aria-live="polite"` region for palette change announcements → AC-18
-- [ ] 13. Assemble `app/page.tsx` — wrap in `<Suspense fallback={<PaletteSkeleton />}>`, wire all components → AC-1, AC-2, AC-3, AC-7, AC-13
+- [ ] 11. Build `components/palette/palette-header.tsx` — name + Share + Export button + one-line descriptor → AC-6
+- [ ] 12. Build `components/palette/lch-sliders.tsx` — 3 range inputs (L/C/H) with numeric fields, real-time palette update, debounced URL sync → AC-19, AC-20, AC-21, AC-22, AC-23, AC-24
+- [ ] 13. Build `components/palette/export-palette.tsx` — multi-format export panel (CSS vars / JSON / SCSS / Tailwind / CSS-in-JS), format selector + copy button → AC-12, AC-12b, AC-12c, AC-12d, AC-12e
+- [ ] 14. Add visually-hidden `aria-live="polite"` region for palette change announcements → AC-18
+- [ ] 15. Assemble `app/page.tsx` — wrap in `<Suspense fallback={<PaletteSkeleton />}>`, wire all components including sliders + export → AC-1, AC-2, AC-3, AC-7, AC-13
 
 ### Out of Scope
 
 - Catalogue page (spec 4)
 - Random page (spec 5)
-- Advanced controls (lightness curve, chroma scaling sliders)
 - Palette data files (spec 4)
 
 ## Quality Checklist
@@ -187,23 +222,30 @@ EC6. Hydration mismatch from localStorage format: useColorFormat returns null un
 ### Blocking
 
 - [ ] All Must Have ACs (AC-1 through AC-18) passing
+- [ ] All L/C/H Slider ACs (AC-19 through AC-24) passing
+- [ ] All Tooltip Shade Card ACs (AC-25 through AC-27) passing
+- [ ] All Export ACs (AC-12, AC-12b through AC-12e) passing
 - [ ] All Error Criteria (AC-E1, AC-E2, AC-E3) passing
 - [ ] Shade cards are `<button>` elements (not div with role)
+- [ ] Shade cards show swatch + number only (values in tooltip)
 - [ ] All shade cards have complete aria-labels
+- [ ] L/C/H sliders update palette in real-time
+- [ ] Export panel copies valid code in all 5 formats
 - [ ] Color input error state uses `aria-invalid` + `aria-describedby`
 - [ ] No `role="status"` on static badges
 - [ ] Palette change announced via aria-live
 - [ ] Shade swatch colors use inline `style` + `forced-color-adjust: none`
-- [ ] URL sharing roundtrip works (copy URL → paste in new tab → same palette)
+- [ ] URL sharing roundtrip works (copy URL → paste in new tab → same palette + slider positions)
 - [ ] Copy-to-clipboard works on Chrome + Safari + Firefox
 - [ ] `npm run lint && npm run typecheck && npm run build` clean
 
 ### Advisory
 
-- [ ] AC-19 through AC-22 passing
+- [ ] AC-28 through AC-30 passing
 - [ ] Responsive at all 4 breakpoints (sm/md/lg/xl)
 - [ ] Dark mode renders correctly on all components
 - [ ] Badge text color meets APCA Lc 60+ against card surface
+- [ ] Slider drag performance ≥ 30fps (no jank during real-time update)
 
 ## Test Strategy (MANDATORY)
 
