@@ -27,7 +27,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MagicOK",
+  title: {
+    default: "Magiklch — OKLCH Palette Generator",
+    template: "%s — Magiklch",
+  },
   description:
     "Generate beautiful OKLCH color palettes with perceptually uniform shades. Browse Tailwind-inspired palettes, check APCA contrast, and export in any format.",
 };

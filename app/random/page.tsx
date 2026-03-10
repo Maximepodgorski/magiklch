@@ -4,7 +4,7 @@ import { RandomShell } from "@/components/random/random-shell";
 import { PaletteSkeleton } from "@/components/palette/palette-skeleton";
 
 export const metadata: Metadata = {
-  title: "Shuffle — MagicOK",
+  title: "Shuffle",
   description:
     "Generate random OKLCH color palettes for inspiration. Shuffle until you find one you love.",
 };

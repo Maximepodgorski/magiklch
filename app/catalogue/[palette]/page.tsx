@@ -10,10 +10,10 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { palette: id } = await params;
   const palette = getPaletteById(id);
-  if (!palette) return { title: "Not Found — MagicOK" };
+  if (!palette) return { title: "Not Found" };
 
   return {
-    title: `${palette.name} — MagicOK`,
+    title: palette.name,
     description: `Explore the ${palette.name} OKLCH palette with ${palette.source === "tailwind" ? "Tailwind" : "custom"} shades.`,
   };
 }

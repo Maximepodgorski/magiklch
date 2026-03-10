@@ -20,7 +20,7 @@ const SECTIONS = [
 ];
 
 export const metadata: Metadata = {
-  title: "Documentation — MagicOK",
+  title: "Documentation",
   description:
     "Everything you need to know about the OKLCH color space. Interactive demos, comparisons with HSL, wide gamut, and palette generation.",
 };
