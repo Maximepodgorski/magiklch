@@ -28,7 +28,7 @@ export function CatalogueGrid() {
   }, [search, source]);
 
   return (
-    <div className="flex flex-col gap-[var(--layout-gap-xl)]">
+    <div className="flex flex-col gap-6">
       <CatalogueFilter
         search={search}
         onSearchChange={setSearch}
@@ -37,11 +37,11 @@ export function CatalogueGrid() {
       />
 
       {filtered.length === 0 ? (
-        <p className="text-content-note text-content-secondary py-12 text-center">
+        <p className="py-12 text-center text-sm text-muted-foreground">
           No palettes found
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-[var(--layout-gap-md)] sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((palette) => (
             <PalettePreview
               key={palette.id}

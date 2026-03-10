@@ -1,6 +1,13 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type SourceFilter = "all" | "tailwind" | "curated";
 
@@ -16,37 +23,28 @@ export function CatalogueFilter({
   onSourceChange: (value: SourceFilter) => void;
 }) {
   return (
-    <div className="flex flex-col gap-[var(--layout-gap-md)] sm:flex-row sm:items-center">
+    <div className="flex items-center gap-3">
       <Input
         size="md"
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder="Search palettes..."
         aria-label="Search palettes"
-        className="max-w-xs"
+        className="flex-1"
       />
-
-      <div
-        role="tablist"
-        aria-label="Source filter"
-        className="inline-flex items-center gap-[var(--layout-gap-xs)] rounded-[var(--layout-radius-lg)] bg-surface-secondary p-[var(--layout-padding-2xs)]"
+      <Select
+        value={source}
+        onValueChange={(v) => onSourceChange(v as SourceFilter)}
       >
-        {(["all", "tailwind", "curated"] as const).map((s) => (
-          <button
-            key={s}
-            role="tab"
-            aria-selected={source === s}
-            onClick={() => onSourceChange(s)}
-            className={`rounded-[var(--layout-radius-md)] px-[var(--layout-padding-md)] py-[var(--layout-padding-xs)] text-content-caption font-accent transition-colors cursor-pointer ${
-              source === s
-                ? "bg-surface-primary text-content-primary shadow-sm"
-                : "text-content-secondary hover:text-content-primary"
-            }`}
-          >
-            {s === "all" ? "All" : s === "tailwind" ? "Tailwind" : "Curated"}
-          </button>
-        ))}
-      </div>
+        <SelectTrigger className="w-[160px]" aria-label="Source filter">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All</SelectItem>
+          <SelectItem value="tailwind">Tailwind</SelectItem>
+          <SelectItem value="curated">Custom</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }

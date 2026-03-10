@@ -16,3 +16,10 @@ export function getStripeHex(id: string): string[] {
 
   return [];
 }
+
+/**
+ * Get a palette by id (lowercase name).
+ */
+export function getPaletteById(id: string): Palette | undefined {
+  return ALL_PALETTES.find((p) => p.id === id);
+}

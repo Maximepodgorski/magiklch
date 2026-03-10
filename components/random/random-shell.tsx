@@ -1,13 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { BiShuffle, BiLink } from "react-icons/bi";
 import { generatePalette } from "@/lib/color-engine";
 import { useCopy } from "@/hooks/use-copy";
-import { useColorFormat } from "@/hooks/use-color-format";
-import { PaletteGrid } from "@/components/palette/palette-grid";
-import { FormatToggle } from "@/components/palette/format-toggle";
+import { toHex } from "@/lib/color-formatter";
+import { PageHeader } from "@/components/layout/page-header";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   clamp,
   round,
@@ -25,15 +31,16 @@ export function RandomShell() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { copy } = useCopy();
-  const { format, setFormat } = useColorFormat();
-  const mounted = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const mounted = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot
+  );
 
-  // Parse URL params or generate random
   const hasParams = searchParams.has("h") && searchParams.has("c");
   const h = clamp(Number(searchParams.get("h")) || 0, 0, 360);
   const c = clamp(Number(searchParams.get("c")) || 0.15, 0, 0.4);
 
-  // If no params on mount, generate random and set URL
   useEffect(() => {
     if (mounted && !hasParams) {
       const params = generateRandomParams();
@@ -47,7 +54,10 @@ export function RandomShell() {
     [baseColor]
   );
 
+  const [shuffleKey, setShuffleKey] = useState(0);
+
   const handleShuffle = useCallback(() => {
+    setShuffleKey((k) => k + 1);
     const params = generateRandomParams();
     router.replace(`/random?h=${params.h}&c=${params.c}`, { scroll: false });
   }, [router]);
@@ -64,85 +74,93 @@ export function RandomShell() {
   const chromaLabel = getChromaLabel(c);
 
   return (
-    <div className="flex flex-col gap-[var(--layout-gap-2xl)]">
-      {/* Header */}
-      <div className="flex flex-col gap-[var(--layout-gap-lg)] sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-[var(--layout-gap-xs)]">
-          <h1 className="text-heading-medium font-accent text-content-primary">
-            Random Palette
-          </h1>
-          <p className="text-content-note text-content-secondary">
-            {hueLabel}, {chromaLabel} — Hue {round(h, 1)}° Chroma{" "}
-            {round(c, 3)}
-          </p>
-        </div>
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
+        <PageHeader
+          icon={BiShuffle}
+          title="Shuffle"
+          subtitle="Discover random OKLCH palettes for inspiration."
+          rightContent={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleOpenInGenerator}
+              >
+                Remix colors
+              </Button>
+              <Button
+                variant="terciary"
+                size="sm"
+                isIconOnly
+                onClick={handleShare}
+                aria-label="Copy link"
+              >
+                <BiLink size={18} />
+              </Button>
+            </div>
+          }
+        />
 
-        <div className="flex flex-wrap items-center gap-[var(--layout-gap-md)]">
-          <FormatToggle value={format} onChange={setFormat} />
-          <Button variant="primary" size="sm" onClick={handleShuffle}>
-            <ShuffleIcon className="h-4 w-4" />
-            Shuffle
-          </Button>
-          <Button variant="secondary" size="sm" onClick={handleOpenInGenerator}>
-            Open in Generator
-          </Button>
-          <Button variant="terciary" size="sm" onClick={handleShare}>
-            <ShareIcon className="h-4 w-4" />
-            Share
-          </Button>
+        <div className="flex flex-col gap-7 px-10 py-7">
+          {/* Palette info */}
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-medium text-foreground">Hue</span>
+              <span className="text-sm text-muted-foreground">
+                {round(h, 1)}°
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-medium text-foreground">
+                Chroma
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {round(c, 3)}
+              </span>
+            </div>
+            <Badge variant="neutral" size="sm" type="light">
+              {hueLabel}, {chromaLabel}
+            </Badge>
+          </div>
+
+          {/* Palette swatches */}
+          {palette.shades && (
+            <div key={shuffleKey} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${palette.shades.length}, 1fr)` }}>
+              {palette.shades.map((shade, index) => (
+                <Tooltip key={shade.step}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() =>
+                        copy(shade.cssOklch, `Shade ${shade.step}`)
+                      }
+                      className={`group/swatch relative aspect-square w-full cursor-pointer rounded-[var(--layout-radius-2xl)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${shade.oklch.l > 0.85 ? "border border-border" : ""}`}
+                      style={{
+                        backgroundColor: shade.hex,
+                        forcedColorAdjust: "none",
+                        animation: `swatch-pop 250ms cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 20}ms backwards`,
+                      }}
+                      aria-label={`Shade ${shade.step}: ${shade.cssOklch}`}
+                    >
+                      <span className={`absolute top-2 left-2 rounded-[var(--layout-radius-md)] px-1.5 py-0.5 font-mono text-xs opacity-0 transition-opacity group-hover/swatch:opacity-100 ${shade.oklch.l > 0.65 ? "text-gray-900" : "bg-black/20 text-white"}`}>
+                        {shade.step}
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" size="sm" className="max-w-none whitespace-nowrap">
+                    <span className="font-mono">{shade.cssOklch}</span>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Palette grid */}
-      {palette.shades && (
-        <PaletteGrid
-          shades={palette.shades}
-          format={format}
-          paletteName="random"
-        />
-      )}
+      {/* Shuffle footer */}
+      <footer className="flex h-14 items-center justify-end border-t border-border px-5">
+        <Button onClick={handleShuffle}>Shuffle</Button>
+      </footer>
     </div>
-  );
-}
-
-function ShuffleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <polyline points="16 3 21 3 21 8" />
-      <line x1={4} y1={20} x2={21} y2={3} />
-      <polyline points="21 16 21 21 16 21" />
-      <line x1={15} y1={15} x2={21} y2={21} />
-      <line x1={4} y1={4} x2={9} y2={9} />
-    </svg>
-  );
-}
-
-function ShareIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-      <polyline points="16 6 12 2 8 6" />
-      <line x1={12} y1={2} x2={12} y2={15} />
-    </svg>
   );
 }

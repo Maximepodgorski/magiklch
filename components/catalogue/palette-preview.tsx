@@ -14,20 +14,21 @@ export function PalettePreview({
   stripeHex: string[];
   className?: string;
 }) {
-  const sourceLabel = palette.source === "tailwind" ? "Tailwind-inspired" : "Curated";
-  const sourceVariant = palette.source === "tailwind" ? "brand" : "neutral";
+  const sourceLabel =
+    palette.source === "tailwind" ? "Tailwind" : "Custom";
+  const sourceVariant = "neutral" as const;
 
   return (
     <Link
-      href={`/?h=${palette.baseColor.h}&c=${palette.baseColor.c}&name=${palette.id}`}
-      aria-label={`${palette.name} palette, ${sourceLabel}, 11 shades`}
+      href={`/catalogue/${palette.id}`}
+      aria-label={`${palette.name} palette, ${sourceLabel}, ${stripeHex.length} shades`}
       className={cn(
-        "group flex flex-col gap-[var(--layout-gap-md)] rounded-[var(--layout-radius-xl)] bg-surface-primary border border-border-secondary p-[var(--layout-padding-md)] transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current",
+        "group overflow-hidden rounded-[var(--layout-radius-xl)] border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-foreground/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
         className
       )}
     >
-      {/* Color stripe */}
-      <div className="flex h-8 overflow-hidden rounded-[var(--layout-radius-lg)]" aria-hidden="true">
+      {/* Continuous color strip */}
+      <div className="flex h-10" aria-hidden="true">
         {stripeHex.map((hex, i) => (
           <div
             key={i}
@@ -37,9 +38,9 @@ export function PalettePreview({
         ))}
       </div>
 
-      {/* Name + source */}
-      <div className="flex items-center justify-between">
-        <span className="text-content-note font-accent text-content-primary capitalize">
+      {/* Name + source label */}
+      <div className="flex items-center justify-between px-3 py-2.5">
+        <span className="text-sm font-medium text-foreground capitalize">
           {palette.name}
         </span>
         <Badge variant={sourceVariant} size="sm" type="light">
