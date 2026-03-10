@@ -13,10 +13,16 @@ const DEFAULT_LIGHTNESS = 0.65;
 const DEFAULT_NAME = "blue";
 const DEBOUNCE_MS = 300;
 
+function parseParam(raw: string | null, fallback: number): number {
+  if (raw === null) return fallback;
+  const n = Number(raw);
+  return isNaN(n) ? fallback : n;
+}
+
 function parseUrlParams(searchParams: URLSearchParams) {
-  const h = clamp(Number(searchParams.get("h")) || DEFAULT_HUE, 0, 360);
-  const c = clamp(Number(searchParams.get("c")) || DEFAULT_CHROMA, 0, 0.4);
-  const l = clamp(Number(searchParams.get("l")) || DEFAULT_LIGHTNESS, 0, 1);
+  const h = clamp(parseParam(searchParams.get("h"), DEFAULT_HUE), 0, 360);
+  const c = clamp(parseParam(searchParams.get("c"), DEFAULT_CHROMA), 0, 0.4);
+  const l = clamp(parseParam(searchParams.get("l"), DEFAULT_LIGHTNESS), 0, 1);
   const name = searchParams.get("name") || DEFAULT_NAME;
 
   return { h, c, l, name };
