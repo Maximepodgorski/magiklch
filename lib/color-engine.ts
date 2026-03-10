@@ -12,16 +12,21 @@ import { getGamutStatus, mapToSrgb } from "./gamut";
 import { getContrastPair, getBestContrastLevel } from "./contrast";
 import { round } from "./utils";
 
+/** Default lightness center (shade 500 baseline) */
+const DEFAULT_L = 0.65;
+
 /**
  * Generate a single shade from base color parameters.
+ * lightnessOffset shifts the entire curve up/down (additive, clamped).
  */
 function generateShade(
   baseHue: number,
   baseChroma: number,
   step: ShadeStep,
-  name: string
+  name: string,
+  lightnessOffset: number = 0
 ): PaletteShade {
-  const l = SHADE_LIGHTNESS[step];
+  const l = Math.max(0.03, Math.min(0.995, SHADE_LIGHTNESS[step] + lightnessOffset));
   const rawC = baseChroma * CHROMA_MULTIPLIER[step];
   const h = getShadeHue(baseHue, step);
 
@@ -56,8 +61,9 @@ function generateShade(
 
 /**
  * Generate a complete 11-shade palette from an OklchColor.
- * Input L is discarded — lightness comes from the SHADE_LIGHTNESS curve.
- * Only hue and chroma from the input are used.
+ * Hue and chroma from the input drive the palette.
+ * Input L offsets the lightness curve: L=0.65 is neutral (no shift),
+ * L>0.65 shifts all shades lighter, L<0.65 shifts darker.
  */
 export function generatePalette(
   baseColor: OklchColor,
@@ -65,9 +71,10 @@ export function generatePalette(
 ): Palette {
   const id = name.toLowerCase().replace(/\s+/g, "-");
   const safeHue = isNaN(baseColor.h) ? 0 : baseColor.h;
+  const lightnessOffset = baseColor.l - DEFAULT_L;
 
   const shades = SHADE_STEPS.map((step) =>
-    generateShade(safeHue, baseColor.c, step, id)
+    generateShade(safeHue, baseColor.c, step, id, lightnessOffset)
   );
 
   return {
