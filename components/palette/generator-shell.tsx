@@ -27,16 +27,17 @@ import { ColorInput } from "./color-input";
 import { LchSliders } from "./lch-sliders";
 import type { OklchColor, ShadeStep, PaletteShade } from "@/types/color";
 
-type Scale = 4 | 6 | 8 | 10 | 12;
+type Scale = 4 | 6 | 8 | 10 | 11 | 12;
 type GamutMode = "srgb" | "p3";
 
-const SCALE_OPTIONS: Scale[] = [4, 6, 8, 10, 12];
+const SCALE_OPTIONS: Scale[] = [4, 6, 8, 10, 11, 12];
 
 const SCALE_STEPS: Record<Scale, ShadeStep[]> = {
   4: [200, 400, 600, 800],
   6: [100, 300, 500, 700, 800, 950],
   8: [50, 200, 300, 500, 600, 700, 800, 950],
   10: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900],
+  11: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950],
   12: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950, 975],
 };
 
