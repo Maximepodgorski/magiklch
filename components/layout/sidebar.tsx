@@ -7,7 +7,7 @@ import {
   BiSolidGridAlt,
   BiSolidBookOpen,
 } from "react-icons/bi";
-import { BiShuffle, BiLogoLinkedinSquare } from "react-icons/bi";
+import { BiShuffle, BiLogoLinkedinSquare, BiLinkExternal } from "react-icons/bi";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "./sidebar-context";
 import type { IconType } from "react-icons";
@@ -26,6 +26,11 @@ const mainNav: NavItem[] = [
 
 const bottomNav: NavItem[] = [
   { href: "/docs", label: "Docs", icon: BiSolidBookOpen },
+  {
+    href: "https://ui.getlyse.com/components/introduction",
+    label: "Built with Lyse",
+    icon: BiLinkExternal,
+  },
   {
     href: "https://www.linkedin.com/in/maxime-podgorski/",
     label: "LinkedIn",
@@ -69,7 +74,7 @@ export function AppSidebar() {
   };
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-[var(--sidebar-border)] bg-[var(--sidebar)]">
+    <aside className="flex w-56 shrink-0 flex-col border-r border-[var(--sidebar-border)] bg-[var(--sidebar)]">
       {/* Main navigation */}
       <nav className="flex flex-1 flex-col gap-0.5 p-3" aria-label="Main">
         {mainNav.map((item) => (
@@ -80,7 +85,7 @@ export function AppSidebar() {
       {/* Bottom section */}
       <div className="border-t border-border">
         <nav
-          className="flex flex-col gap-0.5 px-3 pb-3 pt-2"
+          className="flex flex-col gap-0.5 px-3 pb-3 pt-3"
           aria-label="Resources"
         >
           {bottomNav.map((item) => (
