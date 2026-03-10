@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { DM_Sans, Inter, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+import { AppSidebar } from "@/components/layout/sidebar";
+import { SidebarProvider } from "@/components/layout/sidebar-context";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
@@ -26,9 +27,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MagicOKLCH",
+  title: "MagicOK",
   description:
-    "Generate beautiful OKLCH color palettes with 11 shades. Browse Tailwind-inspired palettes, check APCA contrast, and export in any format.",
+    "Generate beautiful OKLCH color palettes with perceptually uniform shades. Browse Tailwind-inspired palettes, check APCA contrast, and export in any format.",
 };
 
 export default function RootLayout({
@@ -50,13 +51,20 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TooltipProvider>
-            <div className="flex min-h-svh flex-col">
-              <Header />
-              <main id="main-content" className="flex-1">
-                {children}
-              </main>
-              <Footer />
-            </div>
+            <SidebarProvider>
+              <div className="flex h-svh flex-col overflow-hidden">
+                <Header />
+                <div className="flex flex-1 overflow-hidden">
+                  <AppSidebar />
+                  <main
+                    id="main-content"
+                    className="flex flex-1 flex-col overflow-y-auto"
+                  >
+                    {children}
+                  </main>
+                </div>
+              </div>
+            </SidebarProvider>
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>
