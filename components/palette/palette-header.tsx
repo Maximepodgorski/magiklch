@@ -10,10 +10,12 @@ export function PaletteHeader({
   palette,
   format,
   onFormatChange,
+  onExport,
 }: {
   palette: Palette;
   format: ColorFormat;
   onFormatChange: (f: ColorFormat) => void;
+  onExport?: () => void;
 }) {
   const { copy } = useCopy();
 
@@ -24,11 +26,8 @@ export function PaletteHeader({
   const handleCopyAll = () => {
     if (!palette.shades) return;
     const lines = palette.shades.map((shade) => {
-      const value =
-        format === "cssvar"
-          ? shade.cssVar
-          : formatColor(shade.oklch, format, palette.id, shade.step);
-      return `  --color-${palette.id}-${shade.step}: ${format === "cssvar" ? `var(${value})` : value};`;
+      const value = formatColor(shade.oklch, format === "cssvar" ? "hex" : format, palette.id, shade.step);
+      return `  --color-${palette.id}-${shade.step}: ${value};`;
     });
     const output = `:root {\n${lines.join("\n")}\n}`;
     copy(output, `${palette.shades.length} color values`);
@@ -55,6 +54,12 @@ export function PaletteHeader({
           <CopyIcon className="h-4 w-4" />
           Copy All
         </Button>
+        {onExport && (
+          <Button variant="secondary" size="sm" onClick={onExport}>
+            <ExportIcon className="h-4 w-4" />
+            Export
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -76,6 +81,26 @@ function ShareIcon({ className }: { className?: string }) {
       <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
       <polyline points="16 6 12 2 8 6" />
       <line x1={12} y1={2} x2={12} y2={15} />
+    </svg>
+  );
+}
+
+function ExportIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1={12} y1={15} x2={12} y2={3} />
     </svg>
   );
 }
