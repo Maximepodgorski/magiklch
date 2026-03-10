@@ -37,17 +37,18 @@
   --root-color-danger-950: #460809;
 
   /* Neutral */
-  --root-color-neutral-050: #fafafa;
-  --root-color-neutral-100: #f5f5f5;
-  --root-color-neutral-200: #e5e5e5;
-  --root-color-neutral-300: #d4d4d4;
-  --root-color-neutral-400: #a1a1a1;
-  --root-color-neutral-500: #737373;
-  --root-color-neutral-600: #525252;
-  --root-color-neutral-700: #404040;
-  --root-color-neutral-800: #262626;
-  --root-color-neutral-900: #171717;
-  --root-color-neutral-950: #0f0f0f;
+  --root-color-neutral-050: oklch(0.975 0.002 90);
+  --root-color-neutral-100: oklch(0.94 0.003 89.273);
+  --root-color-neutral-200: oklch(0.895 0.007 88.545);
+  --root-color-neutral-300: oklch(0.83 0.011 87.818);
+  --root-color-neutral-400: oklch(0.735 0.014 87.091);
+  --root-color-neutral-500: oklch(0.65 0.017 86.364);
+  --root-color-neutral-600: oklch(0.56 0.018 85.636);
+  --root-color-neutral-700: oklch(0.48 0.015 84.909);
+  --root-color-neutral-800: oklch(0.39 0.013 84.182);
+  --root-color-neutral-900: oklch(0.33 0.01 83.455);
+  --root-color-neutral-950: oklch(0.27 0.007 82.727);
+  --root-color-neutral-975: oklch(0.2 0.004 82);
 
   /* Success */
   --root-color-success-050: #f0fdf4;
