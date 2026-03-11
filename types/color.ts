@@ -72,3 +72,15 @@ export interface PaletteUrlState {
   l?: number; // Lightness (optional, defaults to 0.65)
   name?: string; // Custom name
 }
+
+/** Single extracted color from a website */
+export interface ExtractedColor {
+  hex: string;
+  oklch: OklchColor;
+}
+
+/** Group of extracted colors clustered by hue */
+export interface ExtractedPalette {
+  label: string; // "Blues", "Reds", "Neutrals", etc.
+  colors: ExtractedColor[];
+}
