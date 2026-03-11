@@ -76,7 +76,7 @@ export default function DocsPage() {
         subtitle="Everything you need to know about the OKLCH color space."
       />
 
-      <div className="flex gap-10 px-10 py-10">
+      <div className="flex gap-6 px-4 py-10 lg:gap-10 lg:px-10">
         <div className="flex min-w-0 flex-1 flex-col gap-16">
         {/* Section 0: Hero */}
         <section id="intro" className="flex flex-col gap-5 scroll-mt-6">

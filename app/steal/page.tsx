@@ -13,7 +13,7 @@ export default function StealPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex-1 animate-pulse px-10 py-8">
+        <div className="flex-1 animate-pulse px-4 py-8 lg:px-10">
           <div className="h-10 w-48 rounded-[var(--layout-radius-lg)] bg-surface-secondary" />
         </div>
       }

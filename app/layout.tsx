@@ -3,7 +3,7 @@ import { DM_Sans, Inter, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "next-themes";
 import { Header } from "@/components/layout/header";
-import { AppSidebar } from "@/components/layout/sidebar";
+import { AppSidebar, MobileSidebar } from "@/components/layout/sidebar";
 import { SidebarProvider } from "@/components/layout/sidebar-context";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toast";
@@ -108,6 +108,7 @@ export default function RootLayout({
                 <Header />
                 <div className="flex flex-1 overflow-hidden">
                   <AppSidebar />
+                  <MobileSidebar />
                   <main
                     id="main-content"
                     className="flex flex-1 flex-col overflow-y-auto"

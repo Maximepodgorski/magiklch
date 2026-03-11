@@ -4,3 +4,4 @@
 2026-03-10 | shipped | 04-catalogue | 3h→3h | 2d | Catalogue: 22 Tailwind + 7 curated palettes, search, filter, preview cards
 2026-03-10 | shipped | 05-random-polish | 2h→2h | 2d | Random page, skip-to-content, meta tags, reduced-motion, quality gates
 2026-03-11 | shipped | steal-color-extractor | 5h→4h | ~4h | Bookmarklet-based website color palette extractor with hue clustering
+2026-03-11 | shipped | responsive-mobile | 5h→2h | ~2h | Mobile responsive layout: sidebar drawer, hamburger nav, swatch scroll, padding, steal notice, a11y

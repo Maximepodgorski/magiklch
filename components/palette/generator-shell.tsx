@@ -142,9 +142,9 @@ export function GeneratorShell() {
           subtitle="Generate OKLCH palettes with APCA contrast scoring."
         />
 
-        <div className="flex flex-col gap-7 px-10 py-7">
+        <div className="flex flex-col gap-7 px-4 py-7 lg:px-10">
           {/* Controls row */}
-          <div className="grid grid-cols-3 items-end gap-6">
+          <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-3 sm:gap-6">
             {/* Seed Color */}
             <div className="flex flex-col gap-1.5">
               <span className="text-[13px] font-medium text-foreground">
@@ -218,7 +218,7 @@ export function GeneratorShell() {
 
           {/* Palette swatches */}
           {visibleShades.length > 0 && (
-            <div className="grid gap-2 pb-4" style={{ gridTemplateColumns: `repeat(${visibleShades.length}, 1fr)` }}>
+            <div className="grid gap-2 overflow-x-auto pb-4" style={{ gridTemplateColumns: `repeat(${visibleShades.length}, minmax(44px, 1fr))` }}>
               {visibleShades.map((shade) => (
                 <Tooltip key={shade.step}>
                   <TooltipTrigger asChild>

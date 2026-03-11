@@ -19,7 +19,7 @@ export default function CataloguePage() {
         subtitle="Browse Tailwind-inspired and custom OKLCH palettes."
         iconBg="bg-muted"
       />
-      <div className="px-10 py-7">
+      <div className="px-4 py-7 lg:px-10">
         <CatalogueGrid />
       </div>
     </div>

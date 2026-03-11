@@ -17,20 +17,6 @@ function useBaseUrl() {
   return window.location.origin;
 }
 
-const COLOR_DOTS = [
-  { color: "#2563EB", size: 12 },
-  { color: "#3B82F6", size: 12 },
-  { color: "#60A5FA", size: 12 },
-  { color: "#22C55E", size: 14 },
-  { color: "#4ADE80", size: 14 },
-  { color: "#F59E0B", size: 16 },
-  { color: "#EF4444", size: 16 },
-  { color: "#A855F7", size: 14 },
-  { color: "#EC4899", size: 14 },
-  { color: "#06B6D4", size: 12 },
-  { color: "#14B8A6", size: 12 },
-] as const;
-
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
     <kbd className="inline-flex items-center rounded-[var(--layout-radius-sm)] border border-border bg-[var(--background-neutral-faint-default)] px-1.5 py-0.5 font-mono text-[11px] font-semibold text-muted-foreground tracking-wide">
@@ -73,30 +59,11 @@ function BookmarkletButton({
   );
 }
 
-function ColorDotsStrip() {
-  return (
-    <div className="flex items-center justify-center gap-1.5">
-      {COLOR_DOTS.map(({ color, size }, i) => (
-        <span
-          key={i}
-          className="rounded-full transition-transform duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5"
-          style={{
-            width: size,
-            height: size,
-            backgroundColor: `${color}40`,
-            border: `1.5px solid ${color}`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 function OnboardingSteps() {
   return (
-    <div className="flex items-start gap-8">
+    <div className="flex flex-col items-start gap-6 sm:flex-row sm:gap-8">
       {/* Step 1 */}
-      <div className="flex w-[200px] flex-col items-center gap-1.5">
+      <div className="flex w-full flex-col items-center gap-1.5 sm:w-[200px]">
         <div className="mb-0.5 flex size-8 items-center justify-center rounded-full border border-border bg-[var(--background-neutral-faint-default)]">
           <span className="text-[13px] font-semibold text-muted-foreground">1</span>
         </div>
@@ -113,7 +80,7 @@ function OnboardingSteps() {
       </div>
 
       {/* Step 2 */}
-      <div className="flex w-[200px] flex-col items-center gap-1.5">
+      <div className="flex w-full flex-col items-center gap-1.5 sm:w-[200px]">
         <div className="mb-0.5 flex size-8 items-center justify-center rounded-full border border-border bg-[var(--background-neutral-faint-default)]">
           <span className="text-[13px] font-semibold text-muted-foreground">2</span>
         </div>
@@ -124,7 +91,7 @@ function OnboardingSteps() {
       </div>
 
       {/* Step 3 */}
-      <div className="flex w-[200px] flex-col items-center gap-1.5">
+      <div className="flex w-full flex-col items-center gap-1.5 sm:w-[200px]">
         <div className="mb-0.5 flex size-8 items-center justify-center rounded-full border border-border bg-[var(--background-neutral-faint-default)]">
           <span className="text-[13px] font-semibold text-muted-foreground">3</span>
         </div>
@@ -191,7 +158,7 @@ export function StealShell() {
   if (!hasColors) {
     return (
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-20 pb-[12vh]">
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 pb-[12vh] lg:px-20">
           {/* Hero top */}
           <div className="flex flex-col items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-[10px] border border-border bg-[var(--background-neutral-faint-default)]">
@@ -207,16 +174,28 @@ export function StealShell() {
             </div>
           </div>
 
-          {/* CTA */}
-          <div className="flex flex-col items-center gap-3">
+          {/* CTA — desktop: bookmarklet drag, mobile: notice */}
+          <div className="hidden flex-col items-center gap-3 sm:flex">
             <BookmarkletButton href={bookmarkletHref} />
             <p className="text-[13px] text-[var(--text-base-moderate)]">
               Drag this button to your bookmarks bar
             </p>
           </div>
 
-          {/* How it works toggle */}
-          <HowItWorksToggle />
+          <div className="flex flex-col items-center gap-2 rounded-[var(--layout-radius-lg)] border border-border bg-[var(--background-neutral-faint-default)] px-5 py-4 text-center sm:hidden">
+            <p className="text-sm font-medium text-foreground">
+              Desktop feature
+            </p>
+            <p className="text-[13px] leading-relaxed text-muted-foreground">
+              The bookmarklet requires a desktop browser with a bookmarks bar.
+              Open this page on your computer to get started.
+            </p>
+          </div>
+
+          {/* How it works toggle — desktop only */}
+          <div className="hidden sm:block">
+            <HowItWorksToggle />
+          </div>
         </div>
       </div>
     );
@@ -232,7 +211,7 @@ export function StealShell() {
           rightContent={<HowItWorksModal />}
         />
 
-        <div className="px-10 py-7">
+        <div className="px-4 py-7 lg:px-10">
           <div className="flex flex-col gap-8">
             {clusters.map((cluster) => (
               <ExtractedPaletteRow key={cluster.label} palette={cluster} />

@@ -27,7 +27,7 @@ export function ExportFooter({
   return (
     <footer className="flex h-14 shrink-0 items-center justify-end gap-2 border-t border-border px-5">
       <Select value={format} onValueChange={(v) => onFormatChange(v as ExportFormat)}>
-        <SelectTrigger className="w-[140px]" aria-label="Export format">
+        <SelectTrigger className="w-[100px] sm:w-[140px]" aria-label="Export format">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -35,8 +35,9 @@ export function ExportFooter({
           <SelectItem value="scss">SCSS</SelectItem>
         </SelectContent>
       </Select>
-      <Button size="sm" onClick={onCopy}>
-        {copyLabel}
+      <Button size="sm" onClick={onCopy} aria-label={copyLabel}>
+        <span className="sm:hidden" aria-hidden="true">Copy</span>
+        <span className="hidden sm:inline" aria-hidden="true">{copyLabel}</span>
       </Button>
     </footer>
   );

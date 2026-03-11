@@ -67,7 +67,7 @@ export function PaletteDetailShell({
       <div className="flex-1 overflow-y-auto">
         {/* Custom header with color swatch */}
         <div className="flex flex-col gap-6">
-          <div className="flex items-end justify-between px-10 pt-8 pb-5">
+          <div className="flex items-end justify-between px-4 pt-8 pb-5 lg:px-10">
             <div className="flex flex-col gap-3">
               <div
                 className="h-8 w-8 rounded-[var(--layout-radius-md)]"
@@ -105,7 +105,7 @@ export function PaletteDetailShell({
           <div className="h-px bg-border" />
         </div>
 
-        <div className="px-10 py-7">
+        <div className="px-4 py-7 lg:px-10">
           {/* 4-column shade grid */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {shades.map((shade) => {

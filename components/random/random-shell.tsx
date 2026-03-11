@@ -102,7 +102,7 @@ export function RandomShell() {
           }
         />
 
-        <div className="flex flex-col gap-7 px-10 py-7">
+        <div className="flex flex-col gap-7 px-4 py-7 lg:px-10">
           {/* Palette info */}
           <div className="flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-1.5">
@@ -126,7 +126,7 @@ export function RandomShell() {
 
           {/* Palette swatches */}
           {palette.shades && (
-            <div key={shuffleKey} className="grid gap-2" style={{ gridTemplateColumns: `repeat(${palette.shades.length}, 1fr)` }}>
+            <div key={shuffleKey} className="grid gap-2 overflow-x-auto" style={{ gridTemplateColumns: `repeat(${palette.shades.length}, minmax(44px, 1fr))` }}>
               {palette.shades.map((shade, index) => (
                 <Tooltip key={shade.step}>
                   <TooltipTrigger asChild>
