@@ -218,7 +218,7 @@ export function GeneratorShell() {
 
           {/* Palette swatches */}
           {visibleShades.length > 0 && (
-            <div className="grid gap-2 overflow-x-auto pb-4" style={{ gridTemplateColumns: `repeat(${visibleShades.length}, minmax(44px, 1fr))` }}>
+            <div className="grid gap-2 pb-4" style={{ gridTemplateColumns: `repeat(${visibleShades.length}, minmax(44px, 1fr))` }}>
               {visibleShades.map((shade) => (
                 <Tooltip key={shade.step}>
                   <TooltipTrigger asChild>
