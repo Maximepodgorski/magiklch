@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useMemo, useCallback } from "react";
-import { BiSolidPalette } from "react-icons/bi";
+import { BiSolidPlusCircle } from "react-icons/bi";
 import { usePalette } from "@/hooks/use-palette";
 import { useCopy } from "@/hooks/use-copy";
 import { generatePalette } from "@/lib/color-engine";
@@ -23,6 +23,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { round } from "@/lib/utils";
 import { ColorInput } from "./color-input";
 import { LchSliders } from "./lch-sliders";
 import type { OklchColor, ShadeStep, PaletteShade } from "@/types/color";
@@ -137,7 +140,7 @@ export function GeneratorShell() {
     <div className="flex flex-1 flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto">
         <PageHeader
-          icon={BiSolidPalette}
+          icon={BiSolidPlusCircle}
           title="Generator"
           subtitle="Generate OKLCH palettes with APCA contrast scoring."
         />
@@ -218,31 +221,48 @@ export function GeneratorShell() {
 
           {/* Palette swatches */}
           {visibleShades.length > 0 && (
-            <div className="grid gap-2 pb-4" style={{ gridTemplateColumns: `repeat(${visibleShades.length}, minmax(44px, 1fr))` }}>
-              {visibleShades.map((shade) => (
-                <Tooltip key={shade.step}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => copy(shade.cssOklch, `Shade ${shade.step}`)}
-                      className={`group/swatch relative aspect-square w-full cursor-pointer rounded-[var(--layout-radius-2xl)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${shade.oklch.l > 0.85 ? "border border-border" : ""}`}
-                      style={{
-                        backgroundColor:
-                          gamut === "p3" ? shade.cssOklch : shade.hex,
-                        forcedColorAdjust: "none",
-                      }}
-                      aria-label={`Shade ${shade.step}: ${shade.cssOklch}`}
-                    >
-                      <span className={`absolute top-2 left-2 rounded-[var(--layout-radius-md)] px-1.5 py-0.5 font-mono text-xs opacity-0 transition-opacity group-hover/swatch:opacity-100 ${shade.oklch.l > 0.65 ? "text-gray-900" : "bg-black/20 text-white"}`}>
-                        {shade.step}
-                      </span>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" size="sm" className="max-w-none whitespace-nowrap">
-                    <span className="font-mono">{shade.cssOklch}</span>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
+            <>
+              <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${visibleShades.length}, minmax(44px, 1fr))` }}>
+                {visibleShades.map((shade) => (
+                  <Tooltip key={shade.step}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => copy(shade.cssOklch, `Shade ${shade.step}`)}
+                        className={`group/swatch relative aspect-square w-full cursor-pointer rounded-[var(--layout-radius-2xl)] transition-transform duration-200 ease-out hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${shade.oklch.l > 0.85 ? "border border-border" : ""}`}
+                        style={{
+                          backgroundColor:
+                            gamut === "p3" ? shade.cssOklch : shade.hex,
+                          forcedColorAdjust: "none",
+                        }}
+                        aria-label={`Shade ${shade.step}: ${shade.cssOklch}`}
+                      >
+                        <span className={`absolute top-2 left-2 rounded-[var(--layout-radius-md)] px-1.5 py-0.5 font-mono text-xs opacity-0 transition-opacity group-hover/swatch:opacity-100 ${shade.oklch.l > 0.65 ? "text-gray-900" : "bg-black/20 text-white"}`}>
+                          {shade.step}
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" size="sm" className="max-w-none whitespace-nowrap">
+                      <span className="font-mono">{shade.cssOklch}</span>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+
+              {/* Preview in Blocks CTA */}
+              <div className="flex justify-end pb-4">
+                <Button
+                  variant="terciary"
+                  size="sm"
+                  asChild
+                >
+                  <Link
+                    href={`/blocks?brand=custom&h=${round(activeColor.h, 1)}&c=${round(activeColor.c)}`}
+                  >
+                    Preview in Blocks
+                  </Link>
+                </Button>
+              </div>
+            </>
           )}
         </div>
       </div>
