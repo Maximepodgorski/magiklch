@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { BiDroplet } from "react-icons/bi";
+import { BiSolidDroplet } from "react-icons/bi";
 import { PageHeader } from "@/components/layout/page-header";
 import { HowItWorksModal } from "./how-it-works-modal";
 import { ExtractedPaletteRow } from "./extracted-palette";
@@ -162,7 +162,7 @@ export function StealShell() {
           {/* Hero top */}
           <div className="flex flex-col items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-[10px] border border-border bg-[var(--background-neutral-faint-default)]">
-              <BiDroplet size={24} className="text-foreground" />
+              <BiSolidDroplet size={24} className="text-foreground" />
             </div>
             <div className="flex flex-col items-center gap-1">
               <h1 className="font-[var(--font-family-heading)] text-[28px] font-semibold tracking-[-0.02em] text-foreground">
@@ -205,7 +205,7 @@ export function StealShell() {
     <div className="flex flex-1 flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto">
         <PageHeader
-          icon={BiDroplet}
+          icon={BiSolidDroplet}
           title="Steal"
           subtitle={`${extracted.length} color${extracted.length !== 1 ? "s" : ""} extracted`}
           rightContent={<HowItWorksModal />}

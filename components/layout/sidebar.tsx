@@ -10,7 +10,8 @@ import {
 } from "react-icons/bi";
 import {
   BiShuffle,
-  BiDroplet,
+  BiSolidDroplet,
+  BiSolidDashboard,
   BiLogoLinkedinSquare,
   BiLinkExternal,
 } from "react-icons/bi";
@@ -34,7 +35,8 @@ const mainNav: NavGroup[] = [
     label: "Features",
     items: [
       { href: "/", label: "Generator", icon: BiSolidPalette },
-      { href: "/steal", label: "Steal", icon: BiDroplet },
+      { href: "/steal", label: "Steal", icon: BiSolidDroplet },
+      { href: "/blocks", label: "Blocks", icon: BiSolidDashboard },
     ],
   },
   {
