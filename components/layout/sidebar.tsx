@@ -4,8 +4,8 @@ import { useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BiSolidPlusCircle,
   BiSolidPalette,
-  BiSolidGridAlt,
   BiSolidBookOpen,
 } from "react-icons/bi";
 import {
@@ -34,7 +34,7 @@ const mainNav: NavGroup[] = [
   {
     label: "Features",
     items: [
-      { href: "/", label: "Generator", icon: BiSolidPalette },
+      { href: "/", label: "Generator", icon: BiSolidPlusCircle },
       { href: "/steal", label: "Steal", icon: BiSolidDroplet },
       { href: "/blocks", label: "Blocks", icon: BiSolidDashboard },
     ],
@@ -42,7 +42,7 @@ const mainNav: NavGroup[] = [
   {
     label: "Explore",
     items: [
-      { href: "/catalogue", label: "Catalogue", icon: BiSolidGridAlt },
+      { href: "/catalogue", label: "Catalogue", icon: BiSolidPalette },
       { href: "/random", label: "Shuffle", icon: BiShuffle },
     ],
   },

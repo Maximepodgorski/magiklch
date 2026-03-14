@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BiSolidGridAlt } from "react-icons/bi";
+import { BiSolidPalette } from "react-icons/bi";
 import { PageHeader } from "@/components/layout/page-header";
 import { CatalogueGrid } from "@/components/catalogue/catalogue-grid";
 
@@ -14,7 +14,7 @@ export default function CataloguePage() {
   return (
     <div className="flex-1 overflow-y-auto">
       <PageHeader
-        icon={BiSolidGridAlt}
+        icon={BiSolidPalette}
         title="Catalogue"
         subtitle="Browse Tailwind-inspired and custom OKLCH palettes."
         iconBg="bg-muted"
