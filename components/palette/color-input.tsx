@@ -17,18 +17,15 @@ export function ColorInput({
   onColorChange: (color: string) => boolean;
   className?: string;
 }) {
-  const [value, setValue] = useState(defaultValue || "");
+  const [localValue, setLocalValue] = useState(defaultValue || "");
   const [error, setError] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const isFocusedRef = useRef(false);
   const errorId = useId();
 
-  // Sync from external (slider changes) when not focused
-  useEffect(() => {
-    if (externalValue && !isFocusedRef.current) {
-      setValue(externalValue);
-    }
-  }, [externalValue]);
+  // Show external value when not focused, local value when editing
+  const value = isFocused ? localValue : (externalValue || localValue);
+  const setValue = setLocalValue;
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,8 +65,8 @@ export function ColorInput({
         size="md"
         value={value}
         onChange={handleChange}
-        onFocus={() => { isFocusedRef.current = true; }}
-        onBlur={() => { isFocusedRef.current = false; }}
+        onFocus={() => { setIsFocused(true); setLocalValue(value); }}
+        onBlur={() => { setIsFocused(false); }}
         placeholder="#3B82F6"
         aria-label="Seed color"
         aria-invalid={error || undefined}

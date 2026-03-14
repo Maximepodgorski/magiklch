@@ -5,3 +5,5 @@
 2026-03-10 | shipped | 05-random-polish | 2h→2h | 2d | Random page, skip-to-content, meta tags, reduced-motion, quality gates
 2026-03-11 | shipped | steal-color-extractor | 5h→4h | ~4h | Bookmarklet-based website color palette extractor with hue clustering
 2026-03-11 | shipped | responsive-mobile | 5h→2h | ~2h | Mobile responsive layout: sidebar drawer, hamburger nav, swatch scroll, padding, steal notice, a11y
+2026-03-14 | shipped | blocks-page | 5h→4h | ~4h | Blocks page: live palette preview with auth/settings/pricing templates, scoped CSS injection, brand+neutral switching
+2026-03-14 | shipped | preview-in-blocks | 1.5h→0.5h | ~30min | Preview in Blocks: custom brand mode from Generator, "Your palette" indicator, edit palette loop
