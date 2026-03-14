@@ -4,6 +4,26 @@ import type { Palette } from "@/types/color";
 
 export const ALL_PALETTES: Palette[] = [...TAILWIND_PALETTES, ...CURATED_PALETTES];
 
+/** Neutral palettes for Blocks preview (Zinc, Neutral, + Magiklch's own Stone rebrand) */
+const NEUTRAL_IDS = new Set(["zinc", "neutral", "stone"]);
+
+const MAGIKLCH_STONE: Palette = {
+  ...TAILWIND_PALETTES.find((p) => p.id === "stone")!,
+  id: "stone",
+  name: "Quarry",
+};
+
+export const NEUTRAL_PALETTES: Palette[] = [
+  MAGIKLCH_STONE,
+  ...TAILWIND_PALETTES.filter((p) => p.id === "zinc" || p.id === "neutral"),
+];
+
+/** All chromatic palettes — Tailwind (17) + curated (7) — for brand token overrides */
+export const BRAND_PALETTES: Palette[] = [
+  ...TAILWIND_PALETTES.filter((p) => !NEUTRAL_IDS.has(p.id)),
+  ...CURATED_PALETTES,
+];
+
 /**
  * Get stripe hex colors for any palette by id.
  */
