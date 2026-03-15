@@ -12,7 +12,7 @@ interface CuratedPaletteEntry {
  */
 export const CURATED_ENTRIES: CuratedPaletteEntry[] = [
   {
-    name: "Graphite",
+    name: "Quarry",
     baseColor: { l: 0.65, c: 0.017, h: 86.364 },
     stripeHex: ["#f7f7f5", "#ecebe9", "#dedcd7", "#cac7bf", "#ada9a0", "#948f84", "#797469", "#615d54", "#48453d", "#383530", "#282623"],
   },

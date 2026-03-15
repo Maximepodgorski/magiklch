@@ -4,17 +4,9 @@ import type { Palette } from "@/types/color";
 
 export const ALL_PALETTES: Palette[] = [...TAILWIND_PALETTES, ...CURATED_PALETTES];
 
-/** Neutral palettes for Blocks preview (Zinc, Neutral, + Magiklch's own Stone rebrand) */
-const NEUTRAL_IDS = new Set(["zinc", "neutral", "stone"]);
-
-const MAGIKLCH_STONE: Palette = {
-  ...TAILWIND_PALETTES.find((p) => p.id === "stone")!,
-  id: "stone",
-  name: "Quarry",
-};
-
+/** Neutral palettes for Blocks preview (Quarry + Zinc + Neutral) */
 export const NEUTRAL_PALETTES: Palette[] = [
-  MAGIKLCH_STONE,
+  CURATED_PALETTES.find((p) => p.id === "quarry")!,
   ...TAILWIND_PALETTES.filter((p) => p.id === "zinc" || p.id === "neutral"),
 ];
 
