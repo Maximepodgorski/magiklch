@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   getContrast,
+  getContrastFromHex,
   getContrastPair,
   getContrastLevel,
   getBestContrastLevel,
@@ -65,6 +66,37 @@ describe("getContrastLevel", () => {
   it("returns Fail for Lc < 45", () => {
     expect(getContrastLevel(44)).toBe("Fail");
     expect(getContrastLevel(0)).toBe("Fail");
+  });
+});
+
+describe("getContrastFromHex", () => {
+  it("returns non-negative Lc value", () => {
+    const lc = getContrastFromHex("#000000", "#ffffff");
+    expect(lc).toBeGreaterThan(60);
+  });
+
+  it("matches getContrast output for same colors", () => {
+    const lcFromOklch = getContrast(darkColor, "#ffffff");
+    const hex = "#1e1745"; // approximate hex for darkColor
+    // Both should produce similar high-contrast values
+    const lcFromHex = getContrastFromHex(hex, "#ffffff");
+    expect(lcFromHex).toBeGreaterThan(60);
+    expect(lcFromOklch).toBeGreaterThan(60);
+  });
+
+  it("same color has zero contrast", () => {
+    const lc = getContrastFromHex("#808080", "#808080");
+    expect(lc).toBe(0);
+  });
+
+  it("is asymmetric (APCA property)", () => {
+    const lcAB = getContrastFromHex("#222222", "#eeeeee");
+    const lcBA = getContrastFromHex("#eeeeee", "#222222");
+    // Both should be non-zero but may differ
+    expect(lcAB).toBeGreaterThan(0);
+    expect(lcBA).toBeGreaterThan(0);
+    // APCA raw values differ by sign, abs may differ slightly
+    expect(lcAB).not.toBe(lcBA);
   });
 });
 

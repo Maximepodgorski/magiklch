@@ -21,6 +21,15 @@ export function getContrast(
 }
 
 /**
+ * Calculate APCA contrast between two hex colors.
+ * Returns absolute Lc value (0-108).
+ */
+export function getContrastFromHex(fgHex: string, bgHex: string): number {
+  const rawLc = calcAPCA(fgHex, bgHex);
+  return Math.abs(Number(rawLc));
+}
+
+/**
  * Calculate contrast of a color against both white and black.
  */
 export function getContrastPair(color: OklchColor): {
