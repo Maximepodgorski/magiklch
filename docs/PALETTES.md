@@ -20,13 +20,17 @@ export interface StaticPalette {
 }
 ```
 
+Note: The Generator supports variable scale sizes (4, 6, 8, 10, 11, or 12 shades).
+Steps available: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950, 975.
+The 975 step is only used in the 12-shade scale. Static palette data covers 50–950.
+
 ## Source Types
 
 | Type | Count | Origin | Editable |
 |------|-------|--------|----------|
 | `tailwind` | 22 | Tailwind CSS v4 official | No (reference data) |
-| `curated` | 5-8 | Hand-crafted custom palettes | No (shipped with app) |
-| `generated` | ∞ | User input on Generator page | Yes (URL params) |
+| `curated` | 7 | Hand-crafted custom palettes | No (shipped with app) |
+| `generated` | ∞ | User input on Generator page (4–12 shades) | Yes (URL params) |
 | `random` | ∞ | Random generation | Yes (shuffle) |
 
 ## Tailwind v4 Palettes (22 Families)
@@ -585,7 +589,7 @@ Every palette (curated or generated) must pass these 6 criteria:
 |---|-----------|------|
 | 1 | **Monotonic lightness** | L values must strictly decrease from 50→950 |
 | 2 | **sRGB displayable** | At least 9 of 11 shades must be in sRGB gamut |
-| 3 | **Contrast range** | Shade 50 must have APCA Lc ≥ 90 on black; Shade 950 must have Lc ≥ 90 on white |
+| 3 | **Contrast range** | Shade 50 must have APCA Lc ≥ 75 on black; Shade 950 must have Lc ≥ 75 on white |
 | 4 | **Chroma bell curve** | Peak chroma at 500-600, reduced at extremes |
 | 5 | **Hue consistency** | Hue variation across shades ≤ 15 degrees |
 | 6 | **Perceptual smoothness** | No visible banding or jumps between adjacent shades |

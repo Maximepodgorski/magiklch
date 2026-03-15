@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Magiklch — OKLCH color palette generator. Pure client-side Next.js app. Input any CSS color, get 11 perceptually uniform shades using OKLCH color science. No backend, no database.
+Magiklch — OKLCH color palette generator. Pure client-side Next.js app. Input any CSS color, get perceptually uniform shades (4–12 configurable) using OKLCH color science + APCA contrast scoring. No backend, no database.
 
 Live: https://magiklch.vercel.app
 
@@ -22,45 +22,42 @@ npx vitest run path  # Run single test file
 ## Architecture
 
 ```
-User Input (any CSS color) > color-parser > color-engine > Palette { 11 shades }
+User Input (any CSS color) > color-parser > color-engine > Palette { N shades }
                                                |-- curves (L/C/H per step)
                                                |-- gamut (sRGB/P3 check + clamp)
                                                |-- contrast (APCA via apca-w3)
+                                               |-- contrast-matrix (NxN pairwise APCA)
                                                +-- color-formatter (HEX/HSL/OKLCH/cssvar)
 ```
 
+See [docs/ENGINEERING.md](docs/ENGINEERING.md) for full file tree, TypeScript interfaces, and API details.
+See [docs/COLORS.md](docs/COLORS.md) for OKLCH color science, APCA thresholds, and gamut mapping.
+
 ### Color Engine (`lib/`)
 
-All functions are **pure** (no I/O, no state, no DOM). 84 test cases via Vitest.
+All functions are **pure** (no I/O, no state, no DOM). 141 test cases via Vitest.
 
 | File | Purpose |
 |------|---------|
 | `color-parser.ts` | Parse any CSS color (hex, hsl, oklch, rgb, named) to OKLCH |
-| `color-engine.ts` | Generate 11 shades from OKLCH input with gamut + APCA |
+| `color-engine.ts` | Generate shades from OKLCH input with gamut + APCA |
 | `color-formatter.ts` | Format OKLCH to hex, hsl, CSS oklch, CSS var |
-| `contrast.ts` | APCA contrast calculation (apca-w3) |
-| `curves.ts` | L/C/H curves per shade step (50-975) |
+| `contrast.ts` | APCA contrast (apca-w3) — `getContrast`, `getContrastFromHex`, `getContrastLevel` |
+| `contrast-matrix.ts` | NxN pairwise APCA contrast matrix from palette shades |
+| `curves.ts` | L/C/H curves per shade step (50–975) |
 | `gamut.ts` | Gamut check (sRGB vs P3) + sRGB clamping |
 | `utils.ts` | Utility functions (round, clamp) |
 | `setup-culori.ts` | Register culori modes/parsers (MUST import before using culori) |
 
-Key design decisions:
+### Key Design Decisions
 
 - Input lightness is always **discarded** — `SHADE_LIGHTNESS` curve determines L for each shade
 - Gamut check happens BEFORE sRGB mapping — `gamut` field reflects the original color
 - HEX/HSL output comes from the sRGB-mapped (safe) version
-- APCA uses absolute Lc values (`Math.abs`), not signed
+- APCA uses absolute Lc values (`Math.abs`), not signed — thresholds: AAA ≥ 75, AA ≥ 60, A ≥ 45
 - NaN hue guard for achromatic inputs (`h = isNaN(h) ? 0 : h`)
+- culori imported via `culori/fn` (enforced by tsconfig + vitest aliases) — never `culori` directly
 - Every file using culori must start with `import "./setup-culori"`
-
-### culori Tree-Shaking
-
-culori is imported via `culori/fn` (enforced by tsconfig + vitest aliases). Never import from `culori` directly.
-
-```json
-// tsconfig paths
-"culori": ["./node_modules/culori/fn"]
-```
 
 ### URL-First State
 
@@ -70,22 +67,18 @@ All palette state lives in URL search params (`?h=259&c=0.214&name=blue`). No gl
 
 | Route | Purpose |
 |-------|---------|
-| `/` | Generator: input color, see 11 shades, export |
+| `/` | Generator: seed color, L/C/H sliders, scale (4–12), gamut, pill tabs (Shades/Contrast), export |
 | `/catalogue` | Browse 22 Tailwind + 7 curated palettes |
 | `/catalogue/[palette]` | Palette detail with full specs |
 | `/random` | Random palette generator |
 | `/docs` | Interactive OKLCH guide with 5 live demos |
-
-### Layout Structure
-
-- **Header** (top): Logo + Beta badge, theme pill, GitHub link
-- **Sidebar** (left, collapsible): Navigation (Generator, Catalogue, Shuffle, Docs, Built with Lyse, LinkedIn)
-- **Main content**: Page-specific, scrollable
-- **Export footer**: Only on generator + palette detail pages
+| `/blocks` | Brand palette preview in UI blocks |
 
 ## Component System
 
-**Always use Lyse Registry components first.** If no Lyse component exists for a UI need, fall back to shadcn/ui + Radix.
+**Always use Lyse Registry components first.** If no Lyse component exists, fall back to shadcn/ui + Radix.
+
+See [docs/DESIGN.md](docs/DESIGN.md) for wireframes, interaction patterns, and responsive strategy.
 
 ### Dual-File Pattern
 
@@ -97,7 +90,7 @@ Customize appearance by editing `.css` only — never hardcode colors in `.tsx`.
 
 ### Available Lyse Components (`components/ui/`)
 
-action-card, avatar, badge, banner-info, button, callout-card, checkbox, chip, dropdown-menu, input, menu, modal, progress, radio, select, spinner, spotlight-card, tabs, tag, textarea, toast, toggle, tooltip
+action-card, avatar, badge, banner-info, button, callout-card, checkbox, chip, dropdown-menu, input, menu, modal, progress, radio, select, spinner, spotlight-card, table, tabs, tag, textarea, toast, toggle, tooltip
 
 ### Component Folders
 
@@ -105,7 +98,7 @@ action-card, avatar, badge, banner-info, button, callout-card, checkbox, chip, d
 |--------|----------|
 | `components/ui/` | 20+ Lyse Registry components (dual-file pattern) |
 | `components/layout/` | header, sidebar, sidebar-context, page-header, theme-pill, footer, export-footer, logo-svg |
-| `components/palette/` | color-input, lch-sliders, palette-grid, shade-card, format-toggle, export-palette, generator-shell |
+| `components/palette/` | color-input, contrast-grid, lch-sliders, palette-grid, shade-card, format-toggle, export-palette, generator-shell |
 | `components/catalogue/` | catalogue-grid, catalogue-filter, palette-preview, palette-detail-shell |
 | `components/docs/` | section-nav, channel-explorer, uniformity-demo, gradient-comparison, gamut-explorer, live-palette-demo |
 | `components/random/` | random-shell |
@@ -136,9 +129,13 @@ action-card, avatar, badge, banner-info, button, callout-card, checkbox, chip, d
 | `tailwind-palettes.ts` | 22 Tailwind-inspired palettes |
 | `curated-palettes.ts` | 7 curated palettes |
 
+See [docs/PALETTES.md](docs/PALETTES.md) for full palette data, curation criteria, and naming conventions.
+
 ## Types (`types/color.ts`)
 
-Core types: `OklchColor`, `ShadeStep` (50-975), `GamutStatus`, `ContrastLevel`, `PaletteShade`, `Palette`, `ColorInput`, `ColorFormat`, `PaletteUrlState`
+Core types: `OklchColor`, `ShadeStep` (50–975), `GamutStatus`, `ContrastLevel`, `PaletteShade`, `Palette`, `ColorInput`, `ColorFormat`, `PaletteUrlState`
+
+See [docs/ENGINEERING.md](docs/ENGINEERING.md) for full interface definitions.
 
 ## CSS Token Architecture
 
@@ -173,11 +170,11 @@ No `tailwind.config.ts` — configured via `@theme inline {}` in `globals.css`. 
 |-------|------|
 | Framework | Next.js 16 + React 19 + Tailwind v4 |
 | UI | Lyse Registry + Radix UI + CVA |
-| Color | culori (tree-shaken) + apca-w3 |
+| Color | culori (tree-shaken via `culori/fn`) + apca-w3 |
 | Fonts | DM Sans (headings) + Inter (body) |
 | Icons | react-icons/bi (BoxIcons) + lucide-react |
 | Theme | next-themes |
-| Testing | Vitest (84 tests on pure functions) |
+| Testing | Vitest (141 tests on pure functions) |
 | Deploy | Vercel |
 
 ## Docs Page (`/docs`)
@@ -198,4 +195,12 @@ Right-side sticky anchor nav (`section-nav.tsx`) visible on xl+ screens, uses In
 
 ## Specs
 
-All specs shipped. Reference docs in `docs/` for color science (`COLORS.md`), engineering (`ENGINEERING.md`), design (`DESIGN.md`), and palette algorithms (`PALETTES.md`).
+Active spec in `specs/active/`. Shipped specs in `specs/shipped/`. Reference docs in `docs/`:
+
+| Doc | Content |
+|-----|---------|
+| [ENGINEERING.md](docs/ENGINEERING.md) | File tree, TypeScript interfaces, API reference, build pipeline |
+| [DESIGN.md](docs/DESIGN.md) | Wireframes, component map, interaction patterns, responsive strategy |
+| [COLORS.md](docs/COLORS.md) | OKLCH color science, APCA contrast, gamut mapping |
+| [PRODUCT.md](docs/PRODUCT.md) | Vision, user stories, feature roadmap |
+| [PALETTES.md](docs/PALETTES.md) | Tailwind + curated palette data, curation criteria |

@@ -12,62 +12,78 @@
 
 ### 1. Generator (`/`)
 
-The primary page. Input a color, get 11 shades.
+The primary page. Input a color, get shades with tabs for swatches and contrast grid.
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  OKLCH Generator                    [Catalogue] [Random] [◐] │
-├──────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │  Enter color    #3b82f6                    [⟳ Random]   │ │
-│  └─────────────────────────────────────────────────────────┘ │
-│                                                              │
-│  Blue                              [OKLCH ▾] [Share] [Copy]  │
-│                                                              │
-│  ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐  │
-│  │ 50  │ 100 │ 200 │ 300 │ 400 │ 500 │ 600 │ 700 │ 800 │  │
-│  │     │     │     │     │     │     │     │     │     │  │
-│  │     │     │     │     │     │     │     │     │     │  │
-│  └─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘  │
-│  ┌───────────┬───────────┐                                   │
-│  │    900    │    950    │                                   │
-│  │           │           │                                   │
-│  └───────────┴───────────┘                                   │
-│                                                              │
-│  ▶ Advanced (lightness curve, chroma scaling)                │
-│                                                              │
-│  ┌──────────────────────────────────────────────────────────┐│
-│  │  oklch-generator.vercel.app · MIT                        ││
-│  └──────────────────────────────────────────────────────────┘│
-└──────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  ☰  Magiklch                                        [◐] [GitHub] │
+├────┬────────────────────────────────────────────────────────────┤
+│    │  ⊕ Generator                                              │
+│ N  │  Generate OKLCH palettes with APCA contrast scoring.      │
+│ A  │                                                            │
+│ V  │  Seed Color          Shades           Gamut                │
+│    │  ┌──┐ #3b82f6        [12 ▾]           [sRGB ▾]            │
+│    │                                                            │
+│    │  ── L ━━━━━━━━━━━●━━━━━━━━━━ 65%                          │
+│    │  ── C ━━━━━━●━━━━━━━━━━━━━━━ 0.214                        │
+│    │  ── H ━━━━━━━━━━━━━━━●━━━━━ 259°                          │
+│    │                                                            │
+│    │  ┌─────────────────────────┐  [Preview in Blocks]         │
+│    │  │ (Shades) │ Contrast    │                                │
+│    │  └─────────────────────────┘                               │
+│    │                                                            │
+│    │  ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐       │
+│    │  │50 │100│200│300│400│500│600│700│800│900│950│975│       │
+│    │  │   │   │   │   │   │   │   │   │   │   │   │   │       │
+│    │  └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘       │
+│    │                                                            │
+│    │  ┌──────────────────────────────────────────────────┐      │
+│    │  │  [CSS ▾]                           [Copy Values] │      │
+│    │  └──────────────────────────────────────────────────┘      │
+└────┴────────────────────────────────────────────────────────────┘
 ```
 
 **Mobile (< 640px):** Grid collapses to 2 columns. Shade cards stack vertically.
 
-### 2. ShadeCard (Detail)
+### Contrast Tab
 
-Each shade card in the grid displays:
+When the "Contrast" pill tab is active, the shade swatches are replaced by an NxN APCA contrast grid.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Preview panel (fixed height, shows on hover/focus)          │
+│  ┌─────────────────┐                                        │
+│  │                  │  300 on 800                            │
+│  │   Aa             │  Lc 72                                 │
+│  │   The quick...   │  [Body text]                           │
+│  │   12px caption   │                                        │
+│  └─────────────────┘                                        │
+├──────────────────────────────────────────────────────────────┤
+│         │ 50  │ 100 │ 200 │ 300 │ ... │ 950 │ 975 │        │
+│  Text\Bg├─────┼─────┼─────┼─────┼─────┼─────┼─────┤        │
+│   50    │  —  │  8  │  14 │  28 │ ... │  97 │ 102 │        │
+│  100    │  6  │  —  │  10 │  22 │ ... │  94 │  99 │        │
+│  200    │ 12  │  8  │  —  │  15 │ ... │  88 │  94 │        │
+│  ...    │     │     │     │     │     │     │     │        │
+│  975    │ 103 │ 100 │  95 │  82 │ ... │  12 │  —  │        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+Cells show Lc value + label (Body/Large/Fail). Passing cells (Lc >= 60) highlighted green. Non-passing cells share muted background with diagonal. Click copies CSS pair as OKLCH.
+
+### Shade Swatch
+
+Each shade is a square swatch. Step number appears on hover. Click copies the OKLCH value. Tooltip shows the full `oklch(...)` string.
 
 ```
 ┌──────────────────────┐
-│                      │  ← Color swatch (fills card top)
-│    oklch(0.623       │
-│    0.214 259)        │
+│                      │  ← Color swatch (square, aspect-ratio 1)
+│         500          │  ← Step label (visible on hover)
 │                      │
-├──────────────────────┤
-│  500        AA  P3   │  ← Step + Contrast badge + Gamut badge
-├──────────────────────┤
-│  #3b82f6         [⎘] │  ← HEX value + Copy button
-│  oklch(62.3%     [⎘] │  ← OKLCH value + Copy button
-│  Lc 68.4 / 42.1     │  ← APCA: on-white / on-black
 └──────────────────────┘
 ```
 
-**Interactions:**
-- Click swatch → copies current format value
-- Click `[⎘]` → copies that specific format
-- Hover → shows full OKLCH breakdown in tooltip
+Light shades (L > 0.85) get a thin border to differentiate from the background.
 
 ### 3. Catalogue (`/catalogue`)
 
@@ -146,9 +162,14 @@ Mapping each UI element to its Lyse Registry component:
 | Color value tooltip | `Tooltip` | Full OKLCH breakdown on hover |
 | Dark mode toggle | `Toggle` | Sun/moon icon toggle |
 | Navigation tabs | `Tabs` | Generator / Catalogue / Random |
-| Advanced controls | Collapsible (custom) | Lightness curve, chroma scaling |
 | Shade card | Custom component | Uses Badge, Tooltip, copy interaction |
 | Palette preview | Custom component | Mini stripe for catalogue grid |
+| Contrast matrix table | `Table` (Lyse, compact) | NxN APCA grid with hover/focus states |
+| Shade/Contrast switcher | `Tabs` | `variant="pill" size="md"` |
+| Scale selector | `Select` | 4 / 6 / 8 / 10 / 11 / 12 shades |
+| Gamut selector | `Select` | sRGB / Display P3 |
+| L/C/H sliders | Custom component | Range inputs with live preview |
+| Contrast grid | Custom component | Uses Table, builds NxN APCA matrix |
 
 ### Components NOT from Lyse Registry (custom)
 
@@ -161,6 +182,9 @@ Mapping each UI element to its Lyse Registry component:
 | `CopyButton` | Wraps `Button` with clipboard logic + toast |
 | `GamutBadge` | Wraps `Badge` with gamut-specific colors |
 | `ContrastBadge` | Wraps `Badge` with APCA-specific colors |
+| `ContrastGrid` | Domain-specific: NxN APCA matrix with hover preview + copy |
+| `LchSliders` | Custom: 3 range sliders for Lightness/Chroma/Hue |
+| `GeneratorShell` | Orchestrator: assembles all generator UI pieces |
 
 ## Interaction Patterns
 
@@ -214,6 +238,24 @@ User clicks [Shuffle] or visits /random
     └─► Palette regenerates instantly
 ```
 
+### Contrast Grid
+
+```
+User hovers/focuses cell [row, col]
+    │
+    ├─► Preview panel shows sample text in text=shades[row] on bg=shades[col]
+    │
+    ├─► Cell gets ring-2 ring-inset highlight
+    │
+    └─► On mouse leave/blur: preview resets to placeholder
+
+User clicks cell [row, col]
+    │
+    ├─► CSS pair copied: color + background-color as OKLCH values
+    │
+    └─► Toast: "Copied contrast pair"
+```
+
 ## Responsive Strategy
 
 ### Breakpoints
@@ -248,7 +290,7 @@ sm (<640px):     [ 50 ][ 100 ]
 ### Mobile Adaptations
 
 - Color input: full width
-- ShadeCard: simplified — swatch + step + primary value only (tap to expand)
+- Shade swatches: simplified — square swatch + step on hover (tap to copy)
 - Catalogue grid: 1 column
 - Actions: bottom bar instead of inline
 
@@ -262,22 +304,7 @@ sm (<640px):     [ 50 ][ 100 ]
 
 ### Implementation
 
-```css
-/* globals.css */
-:root {
-  --bg: oklch(0.985 0 0);         /* Light background */
-  --fg: oklch(0.145 0 0);         /* Dark text */
-  --surface: oklch(0.97 0 0);     /* Card background */
-  --border: oklch(0.88 0 0);
-}
-
-.dark {
-  --bg: oklch(0.12 0 0);          /* Dark background */
-  --fg: oklch(0.95 0 0);          /* Light text */
-  --surface: oklch(0.17 0 0);     /* Card background */
-  --border: oklch(0.25 0 0);
-}
-```
+Uses 3-layer CSS token system (see CLAUDE.md). Semantic tokens auto-flip in `.dark {}` blocks via `next-themes` with `attribute='class'`.
 
 ### Color Swatch Rendering
 
@@ -289,24 +316,13 @@ Shade swatches always render at their actual color regardless of theme. The surr
 
 | Key | Action |
 |-----|--------|
-| `Tab` | Move between ShadeCards and actions |
-| `Enter` / `Space` | Copy color value on focused ShadeCard |
+| `Tab` | Move between shade swatches and actions |
+| `Enter` / `Space` | Copy color value on focused shade swatch |
 | `Escape` | Dismiss toast / close dropdowns |
-| `Arrow Left/Right` | Navigate between shades in grid |
 
 ### ARIA
 
 ```tsx
-// ShadeCard
-<div
-  role="button"
-  tabIndex={0}
-  aria-label={`Copy ${shade.step} shade: ${shade.hex}`}
-  onKeyDown={handleCopyOnEnter}
->
-  {/* ... */}
-</div>
-
 // ContrastBadge
 <span
   role="status"

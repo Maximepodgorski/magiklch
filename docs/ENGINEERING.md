@@ -4,88 +4,121 @@
 
 | Layer | Technology | Version | Purpose |
 |-------|-----------|---------|---------|
-| Framework | Next.js (App Router) | 15.x | SSR, routing, file-based pages |
+| Framework | Next.js (App Router) | 16.x | SSR, routing, file-based pages |
 | UI | React | 19.x | Component rendering |
 | Styling | Tailwind CSS | 4.x | Utility-first CSS |
 | Components | Lyse Registry | latest | Pre-built UI components (shadcn pattern) |
 | Color Engine | culori | 4.x | Color parsing, conversion, gamut mapping |
-| Contrast | apcach | 0.5.x | APCA contrast calculation in OKLCH |
+| Contrast | apca-w3 | latest | APCA contrast calculation (calcAPCA) |
 | Language | TypeScript | 5.x | Type safety |
+| Testing | Vitest | latest | 141 unit tests on pure functions |
 
 ## File Tree
 
 ```
-oklch-generator/
+magiklch/
 ├── app/
 │   ├── layout.tsx              # Root layout (dark mode, fonts, metadata)
 │   ├── page.tsx                # Generator page (/)
 │   ├── catalogue/
-│   │   └── page.tsx            # Catalogue page (/catalogue)
+│   │   ├── page.tsx            # Catalogue page (/catalogue)
+│   │   └── [palette]/
+│   │       └── page.tsx        # Palette detail (/catalogue/[palette])
 │   ├── random/
 │   │   └── page.tsx            # Random palette page (/random)
-│   └── globals.css             # Tailwind imports + CSS variables
+│   ├── docs/
+│   │   └── page.tsx            # Interactive OKLCH guide (/docs)
+│   ├── blocks/
+│   │   └── page.tsx            # Brand palette preview (/blocks)
+│   └── globals.css             # Tailwind v4 imports + @theme inline
 ├── components/
 │   ├── ui/                     # Lyse Registry components (auto-installed)
-│   │   ├── button.tsx
-│   │   ├── button.css
-│   │   ├── badge.tsx
-│   │   ├── badge.css
-│   │   ├── input.tsx
-│   │   ├── input.css
-│   │   ├── tabs.tsx
-│   │   ├── tabs.css
-│   │   ├── toast.tsx
-│   │   ├── toast.css
-│   │   ├── tooltip.tsx
-│   │   ├── tooltip.css
-│   │   ├── toggle.tsx
-│   │   ├── toggle.css
-│   │   ├── select.tsx
-│   │   ├── select.css
-│   │   ├── dropdown-menu.tsx
-│   │   └── dropdown-menu.css
+│   │   ├── button/             # button.tsx + button.css
+│   │   ├── badge/
+│   │   ├── input/
+│   │   ├── tabs/
+│   │   ├── table/              # table.tsx + table.css (compact, striped)
+│   │   ├── toast/
+│   │   ├── tooltip/
+│   │   ├── toggle/
+│   │   ├── select/
+│   │   ├── dropdown-menu/
+│   │   └── ... (20+ total)
 │   ├── palette/
-│   │   ├── palette-grid.tsx    # Grid of 11 ShadeCards
-│   │   ├── shade-card.tsx      # Single shade display
+│   │   ├── generator-shell.tsx # Main generator orchestrator
+│   │   ├── contrast-grid.tsx   # NxN APCA contrast matrix table
 │   │   ├── color-input.tsx     # Color input field + format detection
-│   │   ├── palette-header.tsx  # Palette name + actions (share, copy all)
+│   │   ├── lch-sliders.tsx     # L/C/H range sliders
+│   │   ├── palette-grid.tsx    # Grid of shade swatches
+│   │   ├── shade-card.tsx      # Single shade display
 │   │   └── format-toggle.tsx   # OKLCH / HEX / HSL / CSS var switcher
 │   ├── catalogue/
 │   │   ├── catalogue-grid.tsx  # Grid of palette previews
-│   │   ├── palette-preview.tsx # Mini palette card for catalogue
-│   │   └── catalogue-filter.tsx # Search + hue filter
+│   │   ├── catalogue-filter.tsx # Search + hue filter
+│   │   ├── palette-preview.tsx # Mini palette card
+│   │   └── palette-detail-shell.tsx # Full palette detail page
 │   ├── layout/
-│   │   ├── header.tsx          # Nav + dark mode toggle
+│   │   ├── header.tsx          # Logo + theme pill + GitHub link
+│   │   ├── sidebar.tsx         # Collapsible navigation
+│   │   ├── sidebar-context.tsx # Sidebar state context
+│   │   ├── page-header.tsx     # Page title + subtitle
+│   │   ├── theme-pill.tsx      # Dark/light/system mode toggle
 │   │   ├── footer.tsx          # Links, credits
-│   │   └── theme-toggle.tsx    # Dark/light mode switch
+│   │   ├── export-footer.tsx   # Export format selector + copy button
+│   │   └── logo-svg.tsx        # Logo component
+│   ├── docs/
+│   │   ├── section-nav.tsx     # Sticky anchor nav (xl+)
+│   │   ├── channel-explorer.tsx
+│   │   ├── uniformity-demo.tsx
+│   │   ├── gradient-comparison.tsx
+│   │   ├── gamut-explorer.tsx
+│   │   └── live-palette-demo.tsx
+│   ├── random/
+│   │   └── random-shell.tsx
 │   └── shared/
 │       ├── copy-button.tsx     # 1-click copy with toast
-│       ├── gamut-badge.tsx     # sRGB/P3/Clamped indicator
+│       ├── gamut-badge.tsx     # sRGB/P3 indicator
 │       └── contrast-badge.tsx  # APCA Lc badge (AAA/AA/A/Fail)
 ├── lib/
 │   ├── color-engine.ts         # Core: generate palette from input
 │   ├── color-parser.ts         # Parse any color format → OKLCH
 │   ├── color-formatter.ts      # Format OKLCH → HEX/HSL/CSS var
-│   ├── gamut.ts                # Gamut checking + mapping
-│   ├── contrast.ts             # APCA contrast calculation
-│   ├── curves.ts               # Lightness + chroma curves
-│   └── utils.ts                # Clipboard, URL encoding, helpers
+│   ├── gamut.ts                # Gamut checking + sRGB mapping
+│   ├── contrast.ts             # APCA: getContrast, getContrastFromHex, getContrastLevel
+│   ├── contrast-matrix.ts      # NxN pairwise APCA contrast matrix
+│   ├── curves.ts               # Lightness + chroma + hue curves
+│   ├── utils.ts                # round, clamp helpers
+│   ├── setup-culori.ts         # Register culori modes (import first!)
+│   └── __tests__/              # Vitest tests (141 cases)
+│       ├── color-engine.test.ts
+│       ├── color-parser.test.ts
+│       ├── color-formatter.test.ts
+│       ├── contrast.test.ts
+│       ├── contrast-matrix.test.ts
+│       ├── curves.test.ts
+│       └── gamut.test.ts
 ├── hooks/
-│   ├── use-palette.ts          # Main palette state hook
+│   ├── use-palette.ts          # Main palette state hook (URL params)
 │   ├── use-color-format.ts     # Format preference state
-│   └── use-copy.ts             # Copy-to-clipboard hook with feedback
+│   └── use-copy.ts             # Copy-to-clipboard with toast
 ├── data/
-│   ├── tailwind-palettes.ts    # 22 Tailwind v4 palettes (static data)
-│   └── curated-palettes.ts     # Custom curated palettes
+│   ├── all-palettes.ts         # Union of tailwind + curated
+│   ├── tailwind-palettes.ts    # 22 Tailwind v4 palettes
+│   └── curated-palettes.ts     # 7 curated palettes
 ├── types/
 │   └── color.ts                # All TypeScript interfaces
-├── public/
-│   └── og-image.png            # Open Graph image
+├── styles/lyse/                # 3-layer CSS token system
+│   ├── root-colors.css         # Layer 1: primitive color tokens
+│   ├── root-typography.css     # Layer 1: font tokens
+│   ├── root-layout.css         # Layer 1: spacing/radius tokens
+│   ├── semantic-colors.css     # Layer 2: mode-aware semantics
+│   ├── semantic-global.css     # Layer 2: global semantics
+│   └── shadcn-bridge.css       # Layer 3: shadcn variable mapping
+├── docs/                       # Reference documentation
+├── specs/                      # Feature specs (active/shipped/dropped)
 ├── next.config.ts
-├── tailwind.config.ts
 ├── tsconfig.json
-├── package.json
-└── docs/                       # This documentation
+└── package.json
 ```
 
 ## TypeScript Interfaces
@@ -101,9 +134,9 @@ export interface OklchColor {
 }
 
 /** Shade step values matching Tailwind convention */
-export type ShadeStep = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
+export type ShadeStep = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950 | 975;
 
-export const SHADE_STEPS: readonly ShadeStep[] = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+export const SHADE_STEPS: readonly ShadeStep[] = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950, 975];
 
 /** Gamut status for a color */
 export type GamutStatus = 'srgb' | 'p3' | 'out';
@@ -159,9 +192,12 @@ export interface PaletteUrlState {
 
 | Route | Page | Purpose |
 |-------|------|---------|
-| `/` | `app/page.tsx` | Generator — input color, see 11 shades |
+| `/` | `app/page.tsx` | Generator — seed color, L/C/H sliders, scale (4-12), gamut, tabs (Shades/Contrast), export |
 | `/catalogue` | `app/catalogue/page.tsx` | Browse Tailwind + curated palettes |
+| `/catalogue/[palette]` | `app/catalogue/[palette]/page.tsx` | Palette detail with full specs |
 | `/random` | `app/random/page.tsx` | Random palette generator |
+| `/docs` | `app/docs/page.tsx` | Interactive OKLCH guide with 5 demos |
+| `/blocks` | `app/blocks/page.tsx` | Brand palette preview in UI blocks |
 
 ## State Management
 
@@ -170,7 +206,7 @@ export interface PaletteUrlState {
 All palette state lives in URL search params. No global state store needed.
 
 ```
-https://oklch-generator.vercel.app/?h=259&c=0.214&l=0.623&name=blue
+https://magiklch.vercel.app/?h=259&c=0.214&l=0.623&name=blue
 ```
 
 ### `usePalette` Hook
@@ -216,15 +252,15 @@ export function useColorFormat(): [ColorFormat, (f: ColorFormat) => void];
 npx shadcn@latest init
 
 # Install components from Lyse Registry
-npx shadcn@latest add https://lyse-registry.vercel.app/r/button.json
-npx shadcn@latest add https://lyse-registry.vercel.app/r/badge.json
-npx shadcn@latest add https://lyse-registry.vercel.app/r/input.json
-npx shadcn@latest add https://lyse-registry.vercel.app/r/tabs.json
-npx shadcn@latest add https://lyse-registry.vercel.app/r/toast.json
-npx shadcn@latest add https://lyse-registry.vercel.app/r/tooltip.json
-npx shadcn@latest add https://lyse-registry.vercel.app/r/toggle.json
-npx shadcn@latest add https://lyse-registry.vercel.app/r/select.json
-npx shadcn@latest add https://lyse-registry.vercel.app/r/dropdown-menu.json
+npx shadcn@latest add https://ui.getlyse.com/r/button.json
+npx shadcn@latest add https://ui.getlyse.com/r/badge.json
+npx shadcn@latest add https://ui.getlyse.com/r/input.json
+npx shadcn@latest add https://ui.getlyse.com/r/tabs.json
+npx shadcn@latest add https://ui.getlyse.com/r/toast.json
+npx shadcn@latest add https://ui.getlyse.com/r/tooltip.json
+npx shadcn@latest add https://ui.getlyse.com/r/toggle.json
+npx shadcn@latest add https://ui.getlyse.com/r/select.json
+npx shadcn@latest add https://ui.getlyse.com/r/dropdown-menu.json
 ```
 
 ### Dual-File Pattern
@@ -316,27 +352,70 @@ useMode(modeOklch);
 useMode(modeRgb);
 ```
 
-### apcach — APCA Contrast
+### apca-w3 — APCA Contrast
 
 ```typescript
 // lib/contrast.ts
-import { apcach, crToBg, apcachToCss } from 'apcach';
+import { calcAPCA } from "apca-w3";
 
-export function getContrastOnWhite(color: OklchColor): number {
-  const cssColor = `oklch(${color.l} ${color.c} ${color.h})`;
-  // Returns APCA Lc value (0-108)
-  const result = apcach(crToBg('#ffffff', 0), color.c, color.h);
-  // ... calculate actual Lc between the shade and white
-  return Math.abs(lcValue);
+/** APCA Lc between two OKLCH colors (via gamut-clamped hex) */
+export function getContrast(fg: OklchColor, bg: OklchColor): number {
+  const rawLc = calcAPCA(toHex(fg), toHex(bg));
+  return Math.abs(Number(rawLc));
 }
 
+/** APCA Lc between two hex strings */
+export function getContrastFromHex(fgHex: string, bgHex: string): number {
+  const rawLc = calcAPCA(fgHex, bgHex);
+  return Math.abs(Number(rawLc));
+}
+
+/** Classify Lc value into contrast level */
 export function getContrastLevel(lc: number): ContrastLevel {
-  if (lc >= 90) return 'AAA';
-  if (lc >= 60) return 'AA';
-  if (lc >= 45) return 'A';
+  if (lc >= 75) return 'AAA';   // Body text, any size
+  if (lc >= 60) return 'AA';    // Body text, 18px+
+  if (lc >= 45) return 'A';     // Large text, 24px+
   return 'Fail';
 }
 ```
+
+### contrast-matrix.ts — Pairwise APCA Matrix
+
+```typescript
+// lib/contrast-matrix.ts
+import type { PaletteShade, ShadeStep } from "@/types/color";
+import { getContrastFromHex } from "./contrast";
+
+export interface ContrastMatrix {
+  steps: ShadeStep[];
+  values: number[][]; // values[row][col] = APCA Lc for text=row on bg=col
+}
+
+/** Build NxN pairwise APCA contrast matrix. Uses gamut-clamped .hex field.
+ *  IMPORTANT: APCA is asymmetric — getContrast(a,b) ≠ getContrast(b,a).
+ *  The matrix is NOT mirrored across the diagonal. */
+export function buildContrastMatrix(shades: PaletteShade[]): ContrastMatrix {
+  const steps = shades.map((s) => s.step);
+  const values = shades.map((textShade) =>
+    shades.map((bgShade) =>
+      textShade === bgShade ? 0 : getContrastFromHex(textShade.hex, bgShade.hex)
+    )
+  );
+  return { steps, values };
+}
+```
+
+### ContrastGrid Component
+
+`components/palette/contrast-grid.tsx` — NxN APCA contrast matrix rendered as a Lyse Table (compact mode).
+
+Key implementation details:
+- Uses `useDeferredValue` in `generator-shell.tsx` to decouple slider drag from matrix recompute
+- Hover/focus on any cell shows a preview panel with sample text rendered in actual colors
+- Click copies CSS pair (comment + color + background-color as OKLCH)
+- Passing cells (Lc >= 60) get green tint, non-passing share muted background
+- Rows = text color, columns = background color (APCA asymmetry preserved)
+- Dynamic: works with any shade count (4-12)
 
 ## Performance Targets
 
@@ -368,6 +447,7 @@ npm run dev              # Next.js dev server on :3000
 # Quality gates
 npm run lint             # ESLint
 npm run typecheck        # tsc --noEmit
+npx vitest               # Run all tests (141 cases)
 npm run build            # Next.js production build
 
 # Deploy
@@ -379,15 +459,14 @@ npm run build            # Next.js production build
 ```json
 {
   "dependencies": {
-    "next": "^15",
+    "next": "^16",
     "react": "^19",
     "react-dom": "^19",
     "culori": "^4",
-    "apcach": "^0.5",
+    "apca-w3": "^0.1",
     "class-variance-authority": "^0.7",
     "@radix-ui/react-tabs": "^1",
     "@radix-ui/react-tooltip": "^1",
-    "@radix-ui/react-toggle": "^1",
     "@radix-ui/react-select": "^2",
     "@radix-ui/react-dropdown-menu": "^2",
     "clsx": "^2",
@@ -397,6 +476,7 @@ npm run build            # Next.js production build
     "typescript": "^5",
     "tailwindcss": "^4",
     "@tailwindcss/postcss": "^4",
+    "vitest": "^3",
     "eslint": "^9",
     "eslint-config-next": "^15",
     "@types/react": "^19",
@@ -409,15 +489,15 @@ npm run build            # Next.js production build
 
 ```bash
 # 1. Clone
-git clone https://github.com/[org]/oklch-generator.git
-cd oklch-generator
+git clone https://github.com/maximepodgorski/magiklch.git
+cd magiklch
 
 # 2. Install
 npm install
 
 # 3. Install Lyse Registry components
 npx shadcn@latest init
-npx shadcn@latest add https://lyse-registry.vercel.app/r/button.json
+npx shadcn@latest add https://ui.getlyse.com/r/button.json
 # ... (see full list above)
 
 # 4. Run dev server

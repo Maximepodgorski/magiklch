@@ -50,9 +50,11 @@ const SHADE_LIGHTNESS: Record<number, number> = {
   950: 0.270,  // Near black
 };
 
-const SHADE_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+const SHADE_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950, 975] as const;
 type ShadeStep = typeof SHADE_STEPS[number];
 ```
+
+The Generator supports variable scale sizes (4, 6, 8, 10, 11, or 12 shades). The 975 step is only included in the 12-shade scale.
 
 The curve is intentionally **not** linear:
 - Steps 50→200 are compressed (small L differences) — subtle tints
@@ -197,32 +199,45 @@ Key differences from WCAG 2.x:
 
 ### APCA Thresholds
 
-| Lc value | Use case | Badge |
+| Lc value | Use case | Level |
 |----------|----------|-------|
-| ≥ 90 | Body text, 14px+ normal weight | `AAA` |
-| ≥ 75 | Body text, 18px+ normal weight | `AA` |
-| ≥ 60 | Large text, 24px+, headings | `AA` |
-| ≥ 45 | Large text, 36px+, bold headings | `A` |
-| ≥ 30 | Non-text, icons, focus indicators | — |
-| < 30 | Insufficient for any text | `Fail` |
+| ≥ 75 | Body text, any size/weight | `AAA` |
+| ≥ 60 | Body text, 18px+ normal weight | `AA` |
+| ≥ 45 | Large text, 24px+, headings | `A` |
+| < 45 | Insufficient for text | `Fail` |
 
-### apcach Integration
+Note: these are simplified thresholds used in Magiklch. APCA's full specification has more granular font-size/weight tables.
+
+### apca-w3 Integration
 
 ```typescript
-import { apcach, crToBg, crToFg, apcachToCss } from 'apcach';
+// lib/contrast.ts
+import { calcAPCA } from "apca-w3";
 
-// Generate a color with Lc 60 contrast against white background
-const color = apcach(crToBg('#ffffff', 60), 0.2, 259);
-apcachToCss(color, 'oklch');  // → "oklch(52.71% 0.2 259)"
-apcachToCss(color, 'hex');    // → "#2b6cd4"
+/** APCA Lc between two OKLCH colors (via gamut-clamped hex) */
+export function getContrast(fg: OklchColor, bg: OklchColor): number {
+  const rawLc = calcAPCA(toHex(fg), toHex(bg));
+  return Math.abs(Number(rawLc));
+}
 
-// Generate a color for foreground use against dark background
-const fgColor = apcach(crToFg('#1a1a1a', 75), 0.15, 145);
+/** APCA Lc between two hex strings (used by contrast-matrix) */
+export function getContrastFromHex(fgHex: string, bgHex: string): number {
+  const rawLc = calcAPCA(fgHex, bgHex);
+  return Math.abs(Number(rawLc));
+}
 
-// Supported contrast models
-apcach(crToBg('#fff', 60, 'apca'), 0.2, 259);  // APCA (default, 0-108)
-apcach(crToBg('#fff', 4.5, 'wcag'), 0.2, 259); // WCAG (1-21)
+export function getContrastLevel(lc: number): ContrastLevel {
+  if (lc >= 75) return 'AAA';
+  if (lc >= 60) return 'AA';
+  if (lc >= 45) return 'A';
+  return 'Fail';
+}
 ```
+
+Key points:
+- `calcAPCA` returns signed Lc values — we take `Math.abs()` for absolute contrast
+- APCA is asymmetric: `calcAPCA(textHex, bgHex) ≠ calcAPCA(bgHex, textHex)`
+- Input colors must be hex strings (we use gamut-clamped `.hex` from `PaletteShade`)
 
 ### Contrast Calculation for Shades
 
@@ -231,6 +246,24 @@ For each generated shade, we calculate two APCA Lc values:
 2. **On black** — shade as foreground on `#000000` background
 
 The higher absolute Lc determines the recommended usage (light or dark background) and the badge.
+
+### Shade-to-Shade Contrast Matrix
+
+Beyond individual shade vs white/black, the Contrast Grid computes every pair of shades against each other. This creates an NxN matrix where:
+
+- **Rows** = text color (foreground)
+- **Columns** = background color
+- **Cell value** = APCA Lc between that text/bg pair
+
+```typescript
+// lib/contrast-matrix.ts
+export interface ContrastMatrix {
+  steps: ShadeStep[];
+  values: number[][]; // values[row][col] = Lc for text=row on bg=col
+}
+```
+
+Because APCA is asymmetric, the matrix is NOT symmetric across the diagonal. Text-on-bg contrast differs from bg-on-text contrast. This is intentional and correct — the grid preserves this asymmetry.
 
 ## CSS oklch() Support
 
@@ -259,7 +292,7 @@ Fallback strategy: provide HEX fallback for the <5% on older browsers.
 - [OKLCH in CSS](https://oklch.com/) — Interactive color picker by Evil Martians
 - [Bjorn Ottosson — A perceptual color space for image processing](https://bottosson.github.io/posts/oklab/)
 - [Evil Martians — OKLCH ecosystem tools](https://evilmartians.com/chronicles/exploring-the-oklch-ecosystem-and-its-tools)
+- [apca-w3 — APCA reference implementation](https://github.com/nicoder/apca-w3)
 - [APCA Contrast Calculator](https://apcacontrast.com/)
 - [culori Documentation](https://culorijs.org/api/)
-- [apcach — APCA contrast in OKLCH](https://github.com/antiflasher/apcach)
 - [Tailwind CSS v4 — OKLCH colors](https://tailwindcss.com/blog/tailwindcss-v4)
